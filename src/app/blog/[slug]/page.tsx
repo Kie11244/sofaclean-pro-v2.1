@@ -16,7 +16,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const post = Object.values(blogData).find(p => p.slug === params.slug);
+    const post = Object.values(blogData).find(p => p.slug === decodeURIComponent(params.slug));
     if (!post) {
         return {};
     }
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = Object.values(blogData).find(p => p.slug === params.slug);
+  const post = Object.values(blogData).find(p => p.slug === decodeURIComponent(params.slug));
 
   if (!post) {
     notFound();
