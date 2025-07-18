@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, ShieldCheck, MapPin, Phone } from 'lucide-react';
+import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PriceEstimator } from '@/components/price-estimator';
 import { Reveal } from '@/components/reveal';
 import { JsonLD } from '@/components/json-ld';
+import { blogData } from '@/lib/blog-data';
+
 
 const whyUsData = [
   {
@@ -39,30 +41,6 @@ const faqData = [
     {
         question: "น้ำยาที่ใช้ปลอดภัยต่อเด็กและสัตว์เลี้ยงหรือไม่?",
         answer: "ปลอดภัยแน่นอนครับ เราเลือกใช้ผลิตภัณฑ์ทำความสะอาดคุณภาพสูงที่สกัดจากธรรมชาติ ไม่มีสารเคมีอันตรายตกค้าง ปลอดภัยสำหรับทุกคนในครอบครัวและสัตว์เลี้ยงของคุณ"
-    }
-];
-
-const blogPosts = [
-    {
-        slug: "withi-sak-sofa-pha",
-        title: "วิธีซักโซฟาผ้าด้วยตัวเองเบื้องต้น กำจัดคราบง่ายๆ",
-        description: "รวมเคล็ดลับและขั้นตอนการทำความสะอาดโซฟาผ้าด้วยของใช้ในบ้าน เพื่อจัดการคราบเล็กๆ น้อยๆ ก่อนเรียกใช้บริการจากมืออาชีพ",
-        image: "https://placehold.co/600x400.png",
-        imageHint: "woman cleaning"
-    },
-    {
-        slug: "5-sanyan-tuean-sak-bo-rotyon",
-        title: "5 สัญญาณเตือน! ถึงเวลาต้องซักเบาะรถยนต์แล้ว",
-        description: "เบาะรถยนต์ของคุณมีกลิ่นอับ มีคราบแปลกๆ หรือไม่? มาเช็คสัญญาณที่บ่งบอกว่าเบาะรถของคุณต้องการการทำความสะอาดครั้งใหญ่",
-        image: "https://placehold.co/600x400.png",
-        imageHint: "car interior"
-    },
-    {
-        slug: "sak-sofa-vs-sak-phrom",
-        title: "ซักโซฟา กับ ซักพรม เหมือนหรือต่างกันอย่างไร?",
-        description: "หลายคนอาจคิดว่าการซักโซฟาและพรมใช้วิธีเดียวกัน บทความนี้จะมาไขข้อข้องใจถึงความแตกต่างของวัสดุและวิธีการทำความสะอาด",
-        image: "https://placehold.co/600x400.png",
-        imageHint: "living room"
     }
 ];
 
@@ -107,6 +85,8 @@ const faqPageSchema = {
 
 
 export default function Home() {
+  const blogPosts = Object.values(blogData).slice(0, 3);
+
   return (
     <>
       <JsonLD data={localBusinessSchema} />
@@ -185,12 +165,17 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             {blogPosts.map((post, index) => (
               <Reveal key={post.slug} delay={`${index * 200}ms`}>
-                <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
+                <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
                   <Link href={`/blog/${post.slug}`} className="block">
-                    <Image className="w-full h-48 object-cover" src={post.image} alt={post.title} width={600} height={400} data-ai-hint={post.imageHint} />
+                    <div className="overflow-hidden">
+                      <Image className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={post.image} alt={post.title} width={600} height={400} data-ai-hint={post.imageHint} />
+                    </div>
                   </Link>
                   <CardContent className="p-6 flex flex-col flex-grow">
-                    <h3 className="font-bold text-xl mb-2">{post.title}</h3>
+                    <p className="text-sm text-emerald-600 font-semibold mb-2">{post.category}</p>
+                    <h3 className="font-bold text-xl mb-2 group-hover:text-emerald-700 transition-colors">
+                      <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                    </h3>
                     <p className="text-gray-600 text-sm mb-4 flex-grow">{post.description}</p>
                     <Link href={`/blog/${post.slug}`} className="font-semibold text-emerald-600 hover:text-emerald-700 self-start">
                       อ่านต่อ...
@@ -200,6 +185,13 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
+           <div className="text-center mt-12">
+                <Button asChild size="lg" variant="outline">
+                    <Link href="/blog">
+                        <Newspaper className="mr-2" /> ดูบทความทั้งหมด
+                    </Link>
+                </Button>
+            </div>
         </section>
 
         <Reveal>

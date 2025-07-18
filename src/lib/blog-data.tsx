@@ -2,6 +2,7 @@ export interface BlogPost {
     slug: string;
     title: string;
     description: string;
+    category: string;
     image: string;
     imageHint: string;
     date: string;
@@ -9,10 +10,11 @@ export interface BlogPost {
 }
 
 export const blogData: Record<string, BlogPost> = {
-    "withi-sak-sofa-pha": {
-        slug: "withi-sak-sofa-pha",
+    "how-to-clean-sofa": {
+        slug: "how-to-clean-sofa",
         title: "วิธีซักโซฟาผ้าด้วยตัวเองเบื้องต้น กำจัดคราบง่ายๆ",
         description: "รวมเคล็ดลับและขั้นตอนการทำความสะอาดโซฟาผ้าด้วยของใช้ในบ้าน เพื่อจัดการคราบเล็กๆ น้อยๆ ก่อนเรียกใช้บริการจากมืออาชีพ",
+        category: "เคล็ดลับทำความสะอาด",
         image: "https://placehold.co/800x400.png",
         imageHint: "woman cleaning sofa",
         date: "2024-07-21",
@@ -34,10 +36,11 @@ export const blogData: Record<string, BlogPost> = {
             </>
         ),
     },
-    "5-sanyan-tuean-sak-bo-rotyon": {
-        slug: "5-sanyan-tuean-sak-bo-rotyon",
+    "when-to-clean-car-seats": {
+        slug: "when-to-clean-car-seats",
         title: "5 สัญญาณเตือน! ถึงเวลาต้องซักเบาะรถยนต์แล้ว",
         description: "เบาะรถยนต์ของคุณมีกลิ่นอับ มีคราบแปลกๆ หรือไม่? มาเช็คสัญญาณที่บ่งบอกว่าเบาะรถของคุณต้องการการทำความสะอาดครั้งใหญ่",
+        category: "บริการของเรา",
         image: "https://placehold.co/800x400.png",
         imageHint: "car seat interior",
         date: "2024-07-18",
@@ -51,10 +54,11 @@ export const blogData: Record<string, BlogPost> = {
             </>
         ),
     },
-    "sak-sofa-vs-sak-phrom": {
-        slug: "sak-sofa-vs-sak-phrom",
+    "sofa-vs-carpet-cleaning": {
+        slug: "sofa-vs-carpet-cleaning",
         title: "ซักโซฟา กับ ซักพรม เหมือนหรือต่างกันอย่างไร?",
         description: "หลายคนอาจคิดว่าการซักโซฟาและพรมใช้วิธีเดียวกัน บทความนี้จะมาไขข้อข้องใจถึงความแตกต่างของวัสดุและวิธีการทำความสะอาด",
+        category: "เกร็ดความรู้",
         image: "https://placehold.co/800x400.png",
         imageHint: "sofa carpet",
         date: "2024-07-15",
