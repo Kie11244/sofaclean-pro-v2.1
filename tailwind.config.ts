@@ -8,10 +8,17 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['Kanit', 'sans-serif'],
+        headline: ['Kanit', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -93,7 +100,32 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      typography: (theme: (arg0: string) => any) => ({
+        DEFAULT: {
+          css: {
+            lineHeight: 1.7,
+            a: {
+                color: theme('colors.emerald.600'),
+                '&:hover': {
+                    color: theme('colors.emerald.700'),
+                },
+            },
+            strong: {
+              fontWeight: '600',
+            },
+            h1: {
+              fontWeight: '700',
+            },
+            h2: {
+              fontWeight: '700',
+            },
+            h3: {
+              fontWeight: '600',
+            }
+          },
+        },
+      }),
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
