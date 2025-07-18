@@ -7,9 +7,9 @@ import { LineIcon } from './icons/line-icon';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 
-export function FloatingContact() {
+export function FloatingContact({ locale }: { locale: string }) {
     const [isOpen, setIsOpen] = useState(false);
-
+    
     const contactLinks = [
         {
             href: "https://www.facebook.com/your-page",
@@ -30,6 +30,9 @@ export function FloatingContact() {
             bgClass: "bg-indigo-600 hover:bg-indigo-700"
         }
     ];
+
+    const toggleButtonLabel = locale === 'th' ? (isOpen ? "ปิดตัวเลือกการติดต่อ" : "เปิดตัวเลือกการติดต่อ") : (isOpen ? "Close contact options" : "Open contact options");
+
 
     return (
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-center">
@@ -57,7 +60,7 @@ export function FloatingContact() {
 
             <Button
                 onClick={() => setIsOpen(!isOpen)}
-                aria-label={isOpen ? "Close contact options" : "Open contact options"}
+                aria-label={toggleButtonLabel}
                 aria-expanded={isOpen}
                 size="icon"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white w-16 h-16 rounded-full shadow-xl focus:outline-none relative"
