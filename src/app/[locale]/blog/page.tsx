@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { blogData } from '@/lib/blog-data';
 import { Reveal } from '@/components/reveal';
 import { dictionaries } from '@/lib/dictionaries';
-import { LanguageSwitcher } from '@/components/language-switcher';
+import { Header } from '@/components/header';
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
   const dict = await dictionaries[locale]();
@@ -21,10 +21,8 @@ export default async function BlogIndexPage({ params: { locale } }: { params: { 
 
   return (
     <div className="bg-gray-50/50">
-        <header className="bg-white shadow-sm relative">
-            <div className="absolute top-4 right-4 z-10">
-              <LanguageSwitcher />
-            </div>
+        <Header locale={locale}/>
+        <header className="bg-white shadow-sm pt-20">
             <div className="container mx-auto px-6 py-12 text-center">
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-800">{dict.blogIndex.header}</h1>
                 <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
@@ -38,7 +36,7 @@ export default async function BlogIndexPage({ params: { locale } }: { params: { 
                 {posts.map((post, index) => {
                     const postContent = post[locale];
                     return (
-                    <Reveal key={post.slug.en} delay={`${index * 100}ms`}>
+                    <Reveal key={post.id} delay={`${index * 100}ms`}>
                         <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
                             <Link href={`/${locale}/blog/${post.slug[locale]}`} className="block">
                                 <div className="overflow-hidden">

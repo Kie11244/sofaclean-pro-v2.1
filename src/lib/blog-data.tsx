@@ -6,6 +6,7 @@ export interface BlogPostContent {
 }
 
 export interface BlogPost {
+    id: string;
     slug: {
         th: string;
         en: string;
@@ -19,6 +20,7 @@ export interface BlogPost {
 
 export const blogData: Record<string, BlogPost> = {
     "how-to-clean-sofa": {
+        id: "how-to-clean-sofa",
         slug: {
             th: "วิธีซักโซฟาผ้าด้วยตัวเอง",
             en: "how-to-clean-a-fabric-sofa-yourself",
@@ -72,6 +74,7 @@ export const blogData: Record<string, BlogPost> = {
         }
     },
     "when-to-clean-car-seats": {
+        id: "when-to-clean-car-seats",
         slug: {
             th: "สัญญาณเตือนซักเบาะรถ",
             en: "signs-its-time-to-clean-your-car-seats",
@@ -109,6 +112,7 @@ export const blogData: Record<string, BlogPost> = {
         }
     },
     "sofa-vs-carpet-cleaning": {
+        id: "sofa-vs-carpet-cleaning",
         slug: {
             th: "ซักโซฟาต่างกับซักพรมอย่างไร",
             en: "how-is-sofa-cleaning-different-from-carpet-cleaning",

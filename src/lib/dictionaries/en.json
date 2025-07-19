@@ -1,4 +1,18 @@
+
 {
+  "navigation": {
+    "home": "Home",
+    "services": "Services",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "links": [
+      { "href": "/", "label": "Home" },
+      { "href": "/#why-us", "label": "Services" },
+      { "href": "/blog", "label": "Blog" },
+      { "href": "/#faq", "label": "FAQ" }
+    ]
+  },
   "hero": {
     "title": "#1 Sofa & Car Seat Cleaning Service",
     "subtitle": "Restore your sofa and car seats to their former glory with our professional cleaning service. We eliminate deep-seated stains, dust mites, and unpleasant odors.",

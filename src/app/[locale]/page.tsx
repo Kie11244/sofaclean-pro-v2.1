@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Languages } from 'lucide-react';
+import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,8 +10,7 @@ import { Reveal } from '@/components/reveal';
 import { JsonLD } from '@/components/json-ld';
 import { blogData } from '@/lib/blog-data';
 import { dictionaries } from '@/lib/dictionaries';
-import { LanguageSwitcher } from '@/components/language-switcher';
-
+import { Header } from '@/components/header';
 
 const localBusinessSchema = {
     "@context": "https://schema.org",
@@ -64,10 +63,9 @@ export default async function Home({ params: { locale } }: { params: { locale: '
       <JsonLD data={localBusinessSchema} />
       <JsonLD data={faqPageSchema} />
       
-      <header className="hero-section text-white shadow-lg relative" data-ai-hint="sofa living room">
-        <div className="absolute top-4 right-4 z-10">
-          <LanguageSwitcher />
-        </div>
+      <Header locale={locale}/>
+
+      <header className="hero-section text-white shadow-lg relative pt-20" data-ai-hint="sofa living room">
         <div className="container mx-auto px-6 py-20 md:py-32 text-center">
           <Reveal>
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">{dict.hero.title}</h1>
@@ -143,7 +141,7 @@ export default async function Home({ params: { locale } }: { params: { locale: '
             {blogPosts.map((post, index) => {
               const postContent = post[locale];
               return (
-              <Reveal key={post.slug.en} delay={`${index * 200}ms`}>
+              <Reveal key={post.id} delay={`${index * 200}ms`}>
                 <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
                   <Link href={`/${locale}/blog/${post.slug[locale]}`} className="block">
                     <div className="overflow-hidden">

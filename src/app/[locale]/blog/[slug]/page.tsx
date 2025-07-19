@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Languages } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 
 import { blogData } from '@/lib/blog-data';
 import { JsonLD } from '@/components/json-ld';
@@ -9,17 +9,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { dictionaries } from '@/lib/dictionaries';
-import { LanguageSwitcher } from '@/components/language-switcher';
+import { Header } from '@/components/header';
 
-export async function generateStaticParams() {
+export async function generateStaticParams({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
   const params = Object.values(blogData).flatMap(post => {
-      return [
-          { locale: 'th', slug: post.slug.th },
-          { locale: 'en', slug: post.slug.en }
-      ];
+      if (post.slug[locale]) {
+        return [{ locale: locale, slug: post.slug[locale] }];
+      }
+      return [];
   });
   return params;
 }
+
 
 export async function generateMetadata({ params }: { params: { slug: string, locale: 'th' | 'en' } }) {
     const post = Object.values(blogData).find(p => p.slug[params.locale] === decodeURIComponent(params.slug));
@@ -68,12 +69,13 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
     "inLanguage": params.locale
   };
 
-  const relatedPosts = Object.values(blogData).filter(p => p.slug[params.locale] !== post.slug[params.locale]).slice(0, 2);
+  const relatedPosts = Object.values(blogData).filter(p => p.id !== post.id).slice(0, 2);
 
   return (
     <>
       <JsonLD data={articleSchema} />
-      <div className="bg-background">
+      <Header locale={params.locale}/>
+      <div className="bg-background pt-20">
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="flex justify-between items-center mb-8">
             <Button asChild variant="link" className="text-emerald-600 hover:underline p-0 h-auto">
@@ -81,7 +83,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                 <ArrowLeft className="mr-2 h-4 w-4" /> {dict.blogPost.back}
               </Link>
             </Button>
-            <LanguageSwitcher />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 lg:gap-12">
@@ -125,7 +126,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                         {relatedPosts.map(related => {
                             const relatedContent = related[params.locale];
                             return (
-                             <Card key={related.slug.en} className="overflow-hidden transition-shadow hover:shadow-md">
+                             <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
                                 <Link href={`/${params.locale}/blog/${related.slug[params.locale]}`} className="block">
                                     <Image className="w-full h-32 object-cover" src={related.image} alt={relatedContent.title} width={300} height={150} data-ai-hint={related.imageHint} />
                                     <CardContent className="p-4">
