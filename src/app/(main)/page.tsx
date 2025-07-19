@@ -29,7 +29,7 @@ const localBusinessSchema = {
       "postalCode": "10110",
       "addressCountry": "TH"
     },
-    "description": "บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม และที่นอนครบวงจร พร้อมบริการถึงบ้านคุณในเขตกรุงเทพและปริมณฑล",
+    "description": "บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ซักม่าน และที่นอนครบวงจร พร้อมบริการถึงบ้านและคอนโดในเขตกรุงเทพและปริมณฑล",
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
       "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ],
