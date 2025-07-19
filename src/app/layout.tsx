@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { FloatingContact } from '@/components/floating-contact';
+import { i18n, type Locale } from '@/i18n.config';
+
+export async function generateStaticParams() {
+  return i18n.locales.map(locale => ({ locale: locale }))
+}
 
 export const metadata: Metadata = {
   title: 'บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ครบวงจร | Clean & Care Pro',
@@ -12,12 +16,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale: Locale }
 }>) {
-  // The lang attribute will be set in the page layouts
   return (
-    <html suppressHydrationWarning>
+    <html lang={params.locale ?? i18n.defaultLocale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -2,7 +2,7 @@ import { FloatingContact } from '@/components/floating-contact';
 import { i18n, type Locale } from '@/i18n.config';
 
 export async function generateStaticParams() {
-  return i18n.locales.map(locale => ({ lang: locale }))
+  return i18n.locales.map(locale => ({ locale: locale }))
 }
 
 export default function MainLayout({
@@ -13,9 +13,9 @@ export default function MainLayout({
   params: { locale: Locale }
 }) {
   return (
-    <div lang={params.locale}>
-        {children}
-        <FloatingContact locale={params.locale} />
-    </div>
+    <>
+      {children}
+      <FloatingContact locale={params.locale} />
+    </>
   )
 }
