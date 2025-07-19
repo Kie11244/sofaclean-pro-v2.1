@@ -6,10 +6,14 @@ import { FacebookIcon } from './icons/facebook-icon';
 import { LineIcon } from './icons/line-icon';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import { dictionaries } from '@/lib/client-dictionaries';
+import { Locale } from '@/i18n.config';
 
-export function FloatingContact({ locale }: { locale: string }) {
+export function FloatingContact({ locale }: { locale: Locale }) {
     const [isOpen, setIsOpen] = useState(false);
     
+    const dict = dictionaries[locale].sync();
+
     const contactLinks = [
         {
             href: "https://www.facebook.com/your-page",
@@ -31,8 +35,7 @@ export function FloatingContact({ locale }: { locale: string }) {
         }
     ];
 
-    const toggleButtonLabel = locale === 'th' ? (isOpen ? "ปิดตัวเลือกการติดต่อ" : "เปิดตัวเลือกการติดต่อ") : (isOpen ? "Close contact options" : "Open contact options");
-
+    const toggleButtonLabel = isOpen ? dict.floatingContact.close : dict.floatingContact.open;
 
     return (
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-center">

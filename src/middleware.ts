@@ -1,30 +1,33 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const locales = ['en', 'th']
+const locales = ['en']
 
 export function middleware(request: NextRequest) {
-  // Check if there is any supported locale in the pathname
   const { pathname } = request.nextUrl
+
+  // Check if the pathname starts with a supported locale prefix
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   )
 
-  if (pathnameHasLocale) return
+  if (pathnameHasLocale) {
+    return NextResponse.next()
+  }
 
-  // Redirect if there is no locale
-  const locale = 'th' // default locale
-  request.nextUrl.pathname = `/${locale}${pathname}`
-  // e.g. incoming request is /products
-  // The new URL is now /en/products
-  return Response.redirect(request.nextUrl)
+  // If no locale is present, it's considered the default locale (Thai).
+  // We rewrite the URL internally to /th/... so Next.js can handle it,
+  // but the user sees the URL without the /th prefix.
+  const newUrl = request.nextUrl.clone()
+  newUrl.pathname = `/th${pathname}`
+  return NextResponse.rewrite(newUrl)
 }
 
 export const config = {
   matcher: [
-    // Skip all internal paths (_next)
-    '/((?!_next|favicon.ico|api).*)',
-    // Optional: only run on root (/) URL
-    // '/'
+    // Skip all internal paths (_next, api, etc.)
+    '/((?!_next|api|favicon.ico|images).*)',
+    // Match root separately to avoid issues
+    '/',
   ],
 }

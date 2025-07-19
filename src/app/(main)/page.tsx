@@ -11,6 +11,7 @@ import { JsonLD } from '@/components/json-ld';
 import { blogData } from '@/lib/blog-data';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
+import type { Locale } from '@/i18n.config';
 
 const localBusinessSchema = {
     "@context": "https://schema.org",
@@ -38,9 +39,10 @@ const localBusinessSchema = {
     "sameAs": [ "https://www.facebook.com/your-page", "https://line.me/ti/p/~yourlineid" ]
 };
 
-export default async function Home({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
+export default async function Home({ params: { locale } }: { params: { locale: Locale } }) {
   const dict = await getDictionary(locale);
   const blogPosts = Object.values(blogData).slice(0, 3);
+  const baseLocalePath = locale === 'th' ? '' : `/${locale}`;
   
   const faqData = dict.faqData;
   const whyUsData = dict.whyUsData;
@@ -140,10 +142,11 @@ export default async function Home({ params: { locale } }: { params: { locale: '
           <div className="grid md:grid-cols-3 gap-8">
             {blogPosts.map((post, index) => {
               const postContent = post[locale];
+              const postUrl = `${baseLocalePath}/blog/${post.slug[locale]}`;
               return (
               <Reveal key={post.id} delay={`${index * 200}ms`}>
                 <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
-                  <Link href={`/${locale}/blog/${post.slug[locale]}`} className="block">
+                  <Link href={postUrl} className="block">
                     <div className="overflow-hidden">
                       <Image className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={post.image} alt={postContent.title} width={600} height={400} data-ai-hint={post.imageHint} />
                     </div>
@@ -151,10 +154,10 @@ export default async function Home({ params: { locale } }: { params: { locale: '
                   <CardContent className="p-6 flex flex-col flex-grow">
                     <p className="text-sm text-emerald-600 font-semibold mb-2">{postContent.category}</p>
                     <h3 className="font-bold text-xl mb-2 group-hover:text-emerald-700 transition-colors">
-                      <Link href={`/${locale}/blog/${post.slug[locale]}`}>{postContent.title}</Link>
+                      <Link href={postUrl}>{postContent.title}</Link>
                     </h3>
                     <p className="text-gray-600 text-sm mb-4 flex-grow">{postContent.description}</p>
-                    <Link href={`/${locale}/blog/${post.slug[locale]}`} className="font-semibold text-emerald-600 hover:text-emerald-700 self-start">
+                    <Link href={postUrl} className="font-semibold text-emerald-600 hover:text-emerald-700 self-start">
                       {dict.blog.readMore}
                     </Link>
                   </CardContent>
@@ -164,7 +167,7 @@ export default async function Home({ params: { locale } }: { params: { locale: '
           </div>
            <div className="text-center mt-12">
                 <Button asChild size="lg" variant="outline">
-                    <Link href={`/${locale}/blog`}>
+                    <Link href={`${baseLocalePath}/blog`}>
                         <Newspaper className="mr-2" /> {dict.blog.viewAll}
                     </Link>
                 </Button>

@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { Languages } from "lucide-react"
+import { i18n, type Locale } from '@/i18n.config'
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,28 +13,38 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function LanguageSwitcher() {
-  const pathname = usePathname()
+  const pathName = usePathname()
   const router = useRouter()
 
-  const handleLanguageChange = (newLocale: string) => {
-    // e.g. /en/blog/my-post -> /th/blog/my-post
-    const newPath = `/${newLocale}/${pathname.split("/").slice(2).join("/")}`
-    router.replace(newPath)
+  const redirectedPathName = (locale: Locale) => {
+    if (!pathName) return '/'
+    const segments = pathName.split('/')
+    
+    // Check if the first segment is a locale and remove it
+    if (i18n.locales.includes(segments[1] as Locale)) {
+      segments.splice(1, 1)
+    }
+
+    if (locale === i18n.defaultLocale) {
+      return segments.join('/') || '/'
+    }
+
+    return `/${locale}${segments.join('/')}`
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="ghost" size="icon">
           <Languages className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">Toggle language</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleLanguageChange("th")}>
+        <DropdownMenuItem onClick={() => router.push(redirectedPathName('th'))}>
           ไทย
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleLanguageChange("en")}>
+        <DropdownMenuItem onClick={() => router.push(redirectedPathName('en'))}>
           English
         </DropdownMenuItem>
       </DropdownMenuContent>

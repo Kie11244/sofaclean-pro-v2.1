@@ -4,12 +4,13 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Sparkles, Loader2 } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { getAiQuote } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
-import { dictionaries } from '@/lib/dictionaries';
+import { dictionaries } from '@/lib/client-dictionaries';
+import type { Locale } from '@/i18n.config';
 
 function SubmitButton({ text, pendingText }: { text: string; pendingText: string }) {
     const { pending } = useFormStatus();
@@ -25,7 +26,7 @@ function SubmitButton({ text, pendingText }: { text: string; pendingText: string
     );
 }
 
-export function PriceEstimator({ locale }: { locale: 'th' | 'en' }) {
+export function PriceEstimator({ locale }: { locale: Locale }) {
     const [dict, setDict] = useState(() => dictionaries[locale].sync());
 
     const initialState = { message: '', errors: null, data: null };

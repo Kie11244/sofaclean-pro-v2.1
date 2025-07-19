@@ -6,8 +6,9 @@ import { blogData } from '@/lib/blog-data';
 import { Reveal } from '@/components/reveal';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
+import type { Locale } from '@/i18n.config';
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
+export async function generateMetadata({ params: { locale } }: { params: { locale: Locale } }) {
   const dict = await getDictionary(locale);
   return {
     title: dict.blogIndex.title,
@@ -15,9 +16,10 @@ export async function generateMetadata({ params: { locale } }: { params: { local
   };
 }
 
-export default async function BlogIndexPage({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
+export default async function BlogIndexPage({ params: { locale } }: { params: { locale: Locale } }) {
   const dict = await getDictionary(locale);
   const posts = Object.values(blogData).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const baseLocalePath = locale === 'th' ? '' : `/${locale}`;
 
   return (
     <div className="bg-gray-50/50">
@@ -35,10 +37,11 @@ export default async function BlogIndexPage({ params: { locale } }: { params: { 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {posts.map((post, index) => {
                     const postContent = post[locale];
+                    const postUrl = `${baseLocalePath}/blog/${post.slug[locale]}`;
                     return (
                     <Reveal key={post.id} delay={`${index * 100}ms`}>
                         <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
-                            <Link href={`/${locale}/blog/${post.slug[locale]}`} className="block">
+                            <Link href={postUrl} className="block">
                                 <div className="overflow-hidden">
                                     <Image
                                         className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -53,12 +56,12 @@ export default async function BlogIndexPage({ params: { locale } }: { params: { 
                             <CardContent className="p-6 flex flex-col flex-grow">
                                 <p className="text-sm text-emerald-600 font-semibold mb-2">{postContent.category}</p>
                                 <h2 className="font-bold text-xl mb-3 flex-grow">
-                                     <Link href={`/${locale}/blog/${post.slug[locale]}`} className="hover:text-emerald-700 transition-colors">{postContent.title}</Link>
+                                     <Link href={postUrl} className="hover:text-emerald-700 transition-colors">{postContent.title}</Link>
                                 </h2>
                                 <p className="text-gray-600 text-sm mb-4">{postContent.description}</p>
                                 <div>
                                     <Button asChild variant="link" className="p-0 h-auto font-semibold text-emerald-600 hover:text-emerald-700">
-                                        <Link href={`/${locale}/blog/${post.slug[locale]}`}>
+                                        <Link href={postUrl}>
                                             {dict.blog.readMore} &rarr;
                                         </Link>
                                     </Button>

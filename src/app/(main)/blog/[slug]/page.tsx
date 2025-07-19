@@ -10,19 +10,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
+import { i18n, type Locale } from '@/i18n.config';
 
-export async function generateStaticParams({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
-  const params = Object.values(blogData).flatMap(post => {
-      if (post.slug[locale]) {
-        return [{ locale: locale, slug: post.slug[locale] }];
-      }
-      return [];
+export async function generateStaticParams() {
+  const paths = Object.values(blogData).flatMap(post => {
+    return i18n.locales.map(locale => {
+      return { locale: locale, slug: post.slug[locale] };
+    });
   });
-  return params;
+  return paths;
 }
 
-
-export async function generateMetadata({ params }: { params: { slug: string, locale: 'th' | 'en' } }) {
+export async function generateMetadata({ params }: { params: { slug: string, locale: Locale } }) {
     const post = Object.values(blogData).find(p => p.slug[params.locale] === decodeURIComponent(params.slug));
     if (!post) {
         return {};
@@ -34,9 +33,10 @@ export async function generateMetadata({ params }: { params: { slug: string, loc
     };
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string, locale: 'th' | 'en' } }) {
+export default async function BlogPostPage({ params }: { params: { slug: string, locale: Locale } }) {
   const post = Object.values(blogData).find(p => p.slug[params.locale] === decodeURIComponent(params.slug));
   const dict = await getDictionary(params.locale);
+  const baseLocalePath = params.locale === 'th' ? '' : `/${params.locale}`;
 
   if (!post) {
     notFound();
@@ -48,7 +48,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
     "@type": "Article",
     "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://your-website-url.com/${params.locale}/blog/${post.slug[params.locale]}`
+        "@id": `https://your-website-url.com${baseLocalePath}/blog/${post.slug[params.locale]}`
     },
     "headline": postContent.title,
     "description": postContent.description,
@@ -79,7 +79,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="flex justify-between items-center mb-8">
             <Button asChild variant="link" className="text-emerald-600 hover:underline p-0 h-auto">
-              <Link href={`/${params.locale}/blog`}>
+              <Link href={`${baseLocalePath}/blog`}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {dict.blogPost.back}
               </Link>
             </Button>
@@ -114,7 +114,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                 <div className="mt-8 p-6 bg-emerald-50 rounded-lg border-l-4 border-emerald-500 not-prose">
                     <h3 className="font-bold text-lg text-emerald-800">{dict.blogPost.cta.title}</h3>
                     <p className="text-emerald-900">
-                        {dict.blogPost.cta.description} <Link href={`/${params.locale}#ai-quoter`} className="text-emerald-700 font-bold hover:underline">{dict.blogPost.cta.link}</Link> {dict.blogPost.cta.end}
+                        {dict.blogPost.cta.description} <Link href={`${baseLocalePath}#ai-quoter`} className="text-emerald-700 font-bold hover:underline">{dict.blogPost.cta.link}</Link> {dict.blogPost.cta.end}
                     </p>
                 </div>
             </article>
@@ -125,9 +125,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                     <div className="space-y-4">
                         {relatedPosts.map(related => {
                             const relatedContent = related[params.locale];
+                            const relatedUrl = `${baseLocalePath}/blog/${related.slug[params.locale]}`;
                             return (
                              <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
-                                <Link href={`/${params.locale}/blog/${related.slug[params.locale]}`} className="block">
+                                <Link href={relatedUrl} className="block">
                                     <Image className="w-full h-32 object-cover" src={related.image} alt={relatedContent.title} width={300} height={150} data-ai-hint={related.imageHint} />
                                     <CardContent className="p-4">
                                         <h4 className="font-bold text-base leading-tight hover:text-emerald-600">{relatedContent.title}</h4>
