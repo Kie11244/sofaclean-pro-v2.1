@@ -12,7 +12,7 @@ import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
 import { i18n, type Locale } from '@/i18n.config';
 
-export async function generateStaticParams() {
+export async function generateStaticParams({ params }: { params: { locale: Locale } }) {
   const paths = Object.values(blogData).flatMap(post => {
     return i18n.locales.map(locale => {
       return { locale: locale, slug: post.slug[locale] };
