@@ -10,9 +10,7 @@ import { Reveal } from '@/components/reveal';
 import { JsonLD } from '@/components/json-ld';
 import { blogData } from '@/lib/blog-data';
 import { getDictionary } from '@/lib/dictionaries';
-import { Header } from '@/components/header';
 import { i18n, type Locale } from '@/i18n.config';
-import { FloatingContact } from '@/components/floating-contact';
 
 export async function generateStaticParams() {
   return i18n.locales.map(locale => ({ locale: locale }))
@@ -44,8 +42,7 @@ const localBusinessSchema = {
     "sameAs": [ "https://www.facebook.com/your-page", "https://line.me/ti/p/~yourlineid" ]
 };
 
-export default async function Home(props: { params: { locale: Locale } }) {
-  const locale = props.params.locale;
+export default async function Home({ params: { locale } }: { params: { locale: Locale } }) {
   const dict = await getDictionary(locale);
   const blogPosts = Object.values(blogData).slice(0, 3);
   
@@ -70,9 +67,7 @@ export default async function Home(props: { params: { locale: Locale } }) {
       <JsonLD data={localBusinessSchema} />
       <JsonLD data={faqPageSchema} />
       
-      <Header locale={locale}/>
-
-      <header className="hero-section text-white shadow-lg relative pt-20" data-ai-hint="sofa living room">
+      <header className="hero-section text-white shadow-lg relative" data-ai-hint="sofa living room">
         <div className="container mx-auto px-6 py-20 md:py-32 text-center">
           <Reveal>
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">{dict.hero.title}</h1>
@@ -179,7 +174,7 @@ export default async function Home(props: { params: { locale: Locale } }) {
             </div>
         </section>
 
-        <section id="services" className="py-16 bg-gray-50/50">
+        <section id="services" className="py-16 bg-gray-50/50 -mx-6 px-6">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{dict.priceTable.title}</h2>
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <Reveal>
@@ -267,8 +262,7 @@ export default async function Home(props: { params: { locale: Locale } }) {
         </Reveal>
       </main>
 
-      <FloatingContact locale={locale} />
-      <footer className="bg-gray-900 text-white">
+      <footer className="bg-gray-900 text-white -mx-6 -mb-8">
         <div className="container mx-auto px-6 py-8 text-center">
             <p>&copy; 2024 Clean & Care Pro. All Rights Reserved.</p>
             <p className="text-sm text-gray-400 mt-1">{dict.footer.tagline}</p>
