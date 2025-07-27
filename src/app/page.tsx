@@ -138,7 +138,7 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8">
               {blogPosts.map((post, index) => {
                 const postContent = post.th;
-                const postUrl = `/blog/${post.slug.th}`;
+                const postUrl = `/blog/${post.slug}`;
                 return (
                 <Reveal key={post.id} delay={`${index * 200}ms`}>
                   <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">

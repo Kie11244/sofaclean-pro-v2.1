@@ -12,13 +12,13 @@ import dict from '@/lib/dictionaries/th.json';
 
 export async function generateStaticParams() {
   const paths = Object.values(blogData).map(post => {
-    return { slug: post.slug.th };
+    return { slug: post.slug };
   });
   return paths;
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const post = Object.values(blogData).find(p => p.slug.th === decodeURIComponent(params.slug));
+    const post = Object.values(blogData).find(p => p.slug === decodeURIComponent(params.slug));
     if (!post) {
         return {};
     }
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = Object.values(blogData).find(p => p.slug.th === decodeURIComponent(params.slug));
+  const post = Object.values(blogData).find(p => p.slug === decodeURIComponent(params.slug));
 
   if (!post) {
     notFound();
@@ -42,7 +42,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     "@type": "Article",
     "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://your-website-url.com/blog/${post.slug.th}`
+        "@id": `https://your-website-url.com/blog/${post.slug}`
     },
     "headline": postContent.title,
     "description": postContent.description,
@@ -118,7 +118,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                     <div className="space-y-4">
                         {relatedPosts.map(related => {
                             const relatedContent = related.th;
-                            const relatedUrl = `/blog/${related.slug.th}`;
+                            const relatedUrl = `/blog/${related.slug}`;
                             return (
                              <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
                                 <Link href={relatedUrl} className="block">

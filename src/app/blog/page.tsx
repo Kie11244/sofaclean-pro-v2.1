@@ -29,7 +29,7 @@ export default function BlogIndexPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {posts.map((post, index) => {
                     const postContent = post.th;
-                    const postUrl = `/blog/${post.slug.th}`;
+                    const postUrl = `/blog/${post.slug}`;
                     return (
                     <Reveal key={post.id} delay={`${index * 100}ms`}>
                         <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
