@@ -17,19 +17,13 @@ export function LanguageSwitcher() {
   const router = useRouter()
 
   const redirectedPathName = (locale: Locale) => {
-    if (!pathName) return '/'
+    if (!pathName) return `/${locale}`
     const segments = pathName.split('/')
     
-    // Check if the first segment is a locale and remove it
-    if (i18n.locales.includes(segments[1] as Locale)) {
-      segments.splice(1, 1)
-    }
-
-    if (locale === i18n.defaultLocale) {
-      return segments.join('/') || '/'
-    }
-
-    return `/${locale}${segments.join('/')}`
+    // Replace the current locale with the new one
+    segments[1] = locale
+    
+    return segments.join('/')
   }
 
   return (

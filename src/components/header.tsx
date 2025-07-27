@@ -12,10 +12,9 @@ import { i18n, type Locale } from '@/i18n.config';
 export function Header({ locale }: { locale: Locale }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const dict = dictionaries[locale] ? dictionaries[locale].sync() : dictionaries[i18n.defaultLocale].sync();
-
+    
+    const dict = dictionaries[locale] ?? dictionaries[i18n.defaultLocale].sync();
     const navLinks = dict.navigation.links;
-    const baseLocalePath = locale === 'th' ? '' : `/${locale}`;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -33,7 +32,7 @@ export function Header({ locale }: { locale: Locale }) {
             <div className="container mx-auto px-6">
                 <div className="flex items-center justify-between h-20">
                     <div className="text-2xl font-bold">
-                        <Link href={baseLocalePath || '/'} className={cn(isScrolled || isOpen ? "text-emerald-600" : "text-white")}>
+                        <Link href={`/${locale}`} className={cn(isScrolled || isOpen ? "text-emerald-600" : "text-white")}>
                             Clean & Care
                         </Link>
                     </div>
@@ -41,13 +40,13 @@ export function Header({ locale }: { locale: Locale }) {
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center space-x-6">
                         {navLinks.map((link: { href: string; label: string; }) => (
-                            <Link key={link.href} href={`${baseLocalePath}${link.href}`} className="font-medium hover:text-emerald-500 transition-colors">
+                            <Link key={link.href} href={`/${locale}${link.href.substring(1)}`} className="font-medium hover:text-emerald-500 transition-colors">
                                 {link.label}
                             </Link>
                         ))}
                         <LanguageSwitcher />
                         <Button asChild>
-                            <Link href={`${baseLocalePath}/#booking`}>{dict.navigation.contact}</Link>
+                            <Link href={`/${locale}/#booking`}>{dict.navigation.contact}</Link>
                         </Button>
                     </nav>
 
@@ -69,12 +68,12 @@ export function Header({ locale }: { locale: Locale }) {
             )}>
                 <nav className="flex flex-col items-center p-6 space-y-4">
                      {navLinks.map((link: { href: string; label: string; }) => (
-                        <Link key={link.href} href={`${baseLocalePath}${link.href}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
+                        <Link key={link.href} href={`/${locale}${link.href.substring(1)}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
                             {link.label}
                         </Link>
                     ))}
                     <Button asChild className="w-full">
-                        <Link href={`${baseLocalePath}/#booking`} onClick={() => setIsOpen(false)}>{dict.navigation.contact}</Link>
+                        <Link href={`/${locale}/#booking`} onClick={() => setIsOpen(false)}>{dict.navigation.contact}</Link>
                     </Button>
                 </nav>
             </div>

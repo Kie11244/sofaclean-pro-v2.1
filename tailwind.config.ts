@@ -1,4 +1,5 @@
 import type {Config} from 'tailwindcss';
+import {fontFamily} from 'tailwindcss/defaultTheme';
 
 export default {
   darkMode: ['class'],
@@ -17,8 +18,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Kanit', 'sans-serif'],
-        headline: ['Kanit', 'sans-serif'],
+        body: ['var(--font-kanit)', ...fontFamily.sans],
+        headline: ['var(--font-kanit)', ...fontFamily.sans],
+        sans: ['var(--font-kanit)', ...fontFamily.sans],
         code: ['monospace'],
       },
       colors: {

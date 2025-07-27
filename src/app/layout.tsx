@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { i18n } from '@/i18n.config';
 import { AuthProvider } from '@/contexts/auth-context';
+import { Kanit } from 'next/font/google';
 
 export const metadata: Metadata = {
   title: 'บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ครบวงจร | Clean & Care Pro',
@@ -11,20 +11,19 @@ export const metadata: Metadata = {
   authors: [{ name: 'Clean & Care Pro' }],
 };
 
+const kanit = Kanit({
+  subsets: ['latin', 'thai'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-kanit',
+});
+
 export default function RootLayout({
   children,
-  params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string }
 }>) {
   return (
-    <html lang={params.locale ?? i18n.defaultLocale} suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="th" className={kanit.variable} suppressHydrationWarning>
       <body className="font-body antialiased">
         <AuthProvider>
           {children}

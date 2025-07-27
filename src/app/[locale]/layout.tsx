@@ -5,7 +5,7 @@ export async function generateStaticParams() {
   return i18n.locales.map(locale => ({ locale: locale }))
 }
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {

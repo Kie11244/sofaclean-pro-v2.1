@@ -10,20 +10,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
-import type { Locale } from '@/i18n.config';
+import { i18n, type Locale } from '@/i18n.config';
 
-export async function generateStaticParams({ params: { locale } }: { params: { locale: 'th' | 'en' } }) {
-  const params = Object.values(blogData).flatMap(post => {
-      if (post.slug[locale]) {
-        return [{ locale: locale, slug: post.slug[locale] }];
-      }
-      return [];
+export async function generateStaticParams() {
+  const paths = Object.values(blogData).flatMap(post => {
+    return i18n.locales.map(locale => {
+      return { locale: locale, slug: post.slug[locale] };
+    });
   });
-  return params;
+  return paths;
 }
 
-
-export async function generateMetadata({ params }: { params: { slug:string, locale: Locale } }) {
+export async function generateMetadata({ params }: { params: { slug: string, locale: Locale } }) {
     const post = Object.values(blogData).find(p => p.slug[params.locale] === decodeURIComponent(params.slug));
     if (!post) {
         return {};
@@ -126,9 +124,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                     <div className="space-y-4">
                         {relatedPosts.map(related => {
                             const relatedContent = related[params.locale];
+                            const relatedUrl = `/${params.locale}/blog/${related.slug[params.locale]}`;
                             return (
                              <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
-                                <Link href={`/${params.locale}/blog/${related.slug[params.locale]}`} className="block">
+                                <Link href={relatedUrl} className="block">
                                     <Image className="w-full h-32 object-cover" src={related.image} alt={relatedContent.title} width={300} height={150} data-ai-hint={related.imageHint} />
                                     <CardContent className="p-4">
                                         <h4 className="font-bold text-base leading-tight hover:text-emerald-600">{relatedContent.title}</h4>
