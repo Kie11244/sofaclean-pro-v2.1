@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,7 +14,7 @@ export function Header({ locale }: { locale: Locale }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     
-    const dict = dictionaries[locale] ?? dictionaries[i18n.defaultLocale].sync();
+    const dict = (dictionaries[locale] ?? dictionaries[i18n.defaultLocale]).sync();
     const navLinks = dict.navigation.links;
 
     useEffect(() => {
@@ -40,7 +41,7 @@ export function Header({ locale }: { locale: Locale }) {
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center space-x-6">
                         {navLinks.map((link: { href: string; label: string; }) => (
-                            <Link key={link.href} href={`/${locale}${link.href.substring(1)}`} className="font-medium hover:text-emerald-500 transition-colors">
+                            <Link key={link.href} href={link.href.startsWith('/') ? `/${locale}${link.href.substring(1)}` : `/${locale}/${link.href}`} className="font-medium hover:text-emerald-500 transition-colors">
                                 {link.label}
                             </Link>
                         ))}
@@ -68,7 +69,7 @@ export function Header({ locale }: { locale: Locale }) {
             )}>
                 <nav className="flex flex-col items-center p-6 space-y-4">
                      {navLinks.map((link: { href: string; label: string; }) => (
-                        <Link key={link.href} href={`/${locale}${link.href.substring(1)}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
+                        <Link key={link.href} href={link.href.startsWith('/') ? `/${locale}${link.href.substring(1)}` : `/${locale}/${link.href}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
                             {link.label}
                         </Link>
                     ))}
