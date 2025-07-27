@@ -8,7 +8,7 @@
     "contact": "Contact",
     "links": [
       { "href": "/", "label": "Home" },
-      { "href": "/#why-us", "label": "Services" },
+      { "href": "/#services", "label": "Pricing & Services" },
       { "href": "/blog", "label": "Blog" },
       { "href": "/#faq", "label": "FAQ" }
     ]
@@ -20,7 +20,7 @@
   "hero": {
     "title": "Sofa, Curtain & Upholstery Cleaning Service",
     "subtitle": "Restore your sofa, curtains, and car seats with our professional on-site cleaning service for your home or condo. We eliminate deep-seated stains, dust mites, and odors.",
-    "cta": "Get a Free Quote!"
+    "cta": "View Pricing & Services"
   },
   "whyUs": {
     "title": "Why Choose Clean & Care Pro?",
@@ -77,23 +77,27 @@
     "readMore": "Read more",
     "viewAll": "View All Articles"
   },
-  "priceEstimator": {
-    "title": "Instant Cleaning Quote with AI",
-    "description": "Get an immediate price for cleaning your sofa, curtains, or car seats! Provide details and let our AI give a preliminary estimate.",
-    "form": {
-      "label": "Describe the item to be cleaned:",
-      "placeholder": "e.g., L-shaped cream fabric sofa with food stains, 2 sets of blackout curtains for a condo...",
-      "button": "Get AI Estimate",
-      "buttonPending": "Estimating..."
+  "priceTable": {
+    "title": "Our Service Rates",
+    "popular": "Popular",
+    "pricePrefix": "Starting at",
+    "cta": "Request a Quote",
+    "car": {
+      "title": "Car Seat Cleaning",
+      "subtitle": "All types (Fabric/Leather)",
+      "features": ["Sedan, ECO Car", "SUV, Pickup Truck", "Stain and Odor Removal"]
     },
-    "results": {
-        "title": "Preliminary Quote from AI:",
-        "price": "Estimated Price:",
-        "package": "Recommended Package:",
-        "reason": "Reason:"
+    "sofa": {
+      "title": "Sofa Cleaning",
+      "subtitle": "All sizes (Fabric/Leather)",
+      "features": ["2-3 Seater Sofa", "L-Shape Sofa", "Dust Mite and Germ Removal"]
     },
-    "error": {
-      "title": "An Error Occurred"
+    "other": {
+      "title": "Other Services",
+      "subtitle": "Complete cleaning solutions",
+      "pricePrefix": "Contact for a quote",
+      "price": "Special Price",
+      "features": ["Carpet Cleaning", "Mattress Cleaning", "Full Car Interior Detailing"]
     }
   },
   "faq": {

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { i18n, type Locale } from '@/i18n.config';
+import { FloatingContact } from '@/components/floating-contact';
 
 export async function generateStaticParams() {
   return i18n.locales.map(locale => ({ locale: locale }))
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         {children}
         <Toaster />
+        <FloatingContact locale={params.locale} />
       </body>
     </html>
   );

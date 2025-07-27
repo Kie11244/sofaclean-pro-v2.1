@@ -1,11 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper } from 'lucide-react';
+import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { PriceEstimator } from '@/components/price-estimator';
 import { Reveal } from '@/components/reveal';
 import { JsonLD } from '@/components/json-ld';
 import { blogData } from '@/lib/blog-data';
@@ -77,7 +76,7 @@ export default async function Home({ params: { locale } }: { params: { locale: L
           </Reveal>
           <Reveal delay="400ms">
             <Button asChild size="lg" className="text-xl h-14 px-10 rounded-full font-bold transition-transform duration-300 hover:scale-105 bg-emerald-500 hover:bg-emerald-600">
-              <Link href="#ai-quoter">{dict.hero.cta}</Link>
+              <Link href="#services">{dict.hero.cta}</Link>
             </Button>
           </Reveal>
         </div>
@@ -174,9 +173,60 @@ export default async function Home({ params: { locale } }: { params: { locale: L
             </div>
         </section>
 
-        <Reveal>
-          <PriceEstimator locale={locale}/>
-        </Reveal>
+        <section id="services" className="py-16 bg-gray-50/50">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{dict.priceTable.title}</h2>
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <Reveal>
+                    <div className="bg-white p-8 rounded-xl shadow-lg border-2 border-transparent hover:border-emerald-500 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col h-full">
+                        <h3 className="text-2xl font-bold text-center">{dict.priceTable.car.title}</h3>
+                        <p className="text-center text-gray-500 mb-4">{dict.priceTable.car.subtitle}</p>
+                        <p className="text-center text-gray-600 my-4">{dict.priceTable.pricePrefix}</p>
+                        <p className="text-5xl font-bold text-center mb-6">฿990</p>
+                        <ul className="space-y-3 text-gray-600 mb-6 flex-grow">
+                            {dict.priceTable.car.features.map((feature, i) => (
+                                <li key={i} className="flex items-center"><Check className="text-green-500 mr-2" /> {feature}</li>
+                            ))}
+                        </ul>
+                        <Button asChild className="mt-auto w-full" variant="outline">
+                           <Link href="#booking">{dict.priceTable.cta}</Link>
+                        </Button>
+                    </div>
+                </Reveal>
+                <Reveal delay="200ms">
+                     <div className="bg-emerald-600 text-white p-8 rounded-xl shadow-2xl border-2 border-emerald-600 transform md:scale-105 flex flex-col h-full">
+                        <span className="block bg-yellow-400 text-emerald-900 text-sm font-bold tracking-widest uppercase rounded-full px-4 py-1 mb-4 text-center mx-auto max-w-max">{dict.priceTable.popular}</span>
+                        <h3 className="text-2xl font-bold text-center">{dict.priceTable.sofa.title}</h3>
+                        <p className="text-center text-emerald-200 mb-4">{dict.priceTable.sofa.subtitle}</p>
+                        <p className="text-center text-emerald-100 my-4">{dict.priceTable.pricePrefix}</p>
+                        <p className="text-5xl font-bold text-center mb-6">฿1,290</p>
+                        <ul className="space-y-3 text-emerald-100 mb-6 flex-grow">
+                           {dict.priceTable.sofa.features.map((feature, i) => (
+                                <li key={i} className="flex items-center"><Check className="text-yellow-400 mr-2" /> {feature}</li>
+                            ))}
+                        </ul>
+                        <Button asChild className="mt-auto w-full bg-white hover:bg-gray-100 text-emerald-600 font-bold">
+                            <Link href="#booking">{dict.priceTable.cta}</Link>
+                        </Button>
+                    </div>
+                </Reveal>
+                <Reveal delay="400ms">
+                    <div className="bg-white p-8 rounded-xl shadow-lg border-2 border-transparent hover:border-emerald-500 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col h-full">
+                        <h3 className="text-2xl font-bold text-center">{dict.priceTable.other.title}</h3>
+                        <p className="text-center text-gray-500 mb-4">{dict.priceTable.other.subtitle}</p>
+                        <p className="text-center text-gray-600 my-4">{dict.priceTable.other.pricePrefix}</p>
+                        <p className="text-3xl font-bold text-center mb-6 text-emerald-600">{dict.priceTable.other.price}</p>
+                        <ul className="space-y-3 text-gray-600 mb-6 flex-grow">
+                            {dict.priceTable.other.features.map((feature, i) => (
+                                <li key={i} className="flex items-center"><Check className="text-green-500 mr-2" /> {feature}</li>
+                            ))}
+                        </ul>
+                         <Button asChild className="mt-auto w-full" variant="outline">
+                           <Link href="#booking">{dict.priceTable.cta}</Link>
+                        </Button>
+                    </div>
+                </Reveal>
+            </div>
+        </section>
 
         <section id="faq">
             <Reveal>
