@@ -9,13 +9,11 @@ export interface BlogPost {
     id: string;
     slug: {
         th: string;
-        en: string;
     };
     image: string;
     imageHint: string;
     date: string;
     th: BlogPostContent;
-    en: BlogPostContent;
 }
 
 export const blogData: Record<string, BlogPost> = {
@@ -23,7 +21,6 @@ export const blogData: Record<string, BlogPost> = {
         id: "how-to-clean-sofa",
         slug: {
             th: "วิธีซักโซฟาผ้าด้วยตัวเอง",
-            en: "how-to-clean-a-fabric-sofa-yourself",
         },
         image: "https://placehold.co/800x400.png",
         imageHint: "woman cleaning sofa",
@@ -50,34 +47,11 @@ export const blogData: Record<string, BlogPost> = {
                 </>
             ),
         },
-        en: {
-            title: "How to Clean a Fabric Sofa Yourself: Easy Stain Removal",
-            description: "A collection of tips and steps for cleaning a fabric sofa with household items to manage small stains before calling in the professionals.",
-            category: "Cleaning Tips",
-            content: (
-                 <>
-                    <p>A fabric sofa is a favorite piece of furniture for many, but it can easily accumulate dust and stains. Regularly cleaning your fabric sofa yourself helps extend its life and keeps it looking new. Today, we have some simple tips for you.</p>
-                    <h2>1. Prepare Your Supplies</h2>
-                    <ul>
-                        <li>Vacuum cleaner (with a brush attachment)</li>
-                        <li>2-3 clean microfiber cloths</li>
-                        <li>Warm water</li>
-                        <li>Mild dish soap or gentle soap</li>
-                        <li>Baking soda (for odor removal)</li>
-                    </ul>
-                    <h2>2. Vacuum Thoroughly</h2>
-                    <p>The most crucial first step is to vacuum. Use a vacuum with a brush attachment to remove all debris, dust, and pet hair from every nook and cranny of the sofa, including under the cushions. Vacuuming prevents dust from turning into mud when it gets wet.</p>
-                    <h2>3. Spot Treat Stains</h2>
-                    <p>Mix a small amount of dish soap with warm water. Dampen a microfiber cloth with the solution and wring it out as much as possible. Gently blot the stain. <strong>Do not rub vigorously</strong>, as this can spread the stain and push it deeper into the fabric. Blot from the outside of the stain inward. Once the stain fades, use another clean, damp cloth to blot the area with plain water to rinse off the soap.</p>
-                </>
-            ),
-        }
     },
     "when-to-clean-car-seats": {
         id: "when-to-clean-car-seats",
         slug: {
             th: "สัญญาณเตือนซักเบาะรถ",
-            en: "signs-its-time-to-clean-your-car-seats",
         },
         image: "https://placehold.co/800x400.png",
         imageHint: "car seat interior",
@@ -96,26 +70,11 @@ export const blogData: Record<string, BlogPost> = {
                 </>
             ),
         },
-        en: {
-            title: "5 Warning Signs! It's Time to Clean Your Car Seats",
-            description: "Does your car upholstery have a musty smell or strange stains? Let's check the signs that indicate your car seats need a deep clean.",
-            category: "Our Services",
-            content: (
-                 <>
-                    <p>We are constantly in contact with our car seats, so it's no surprise they become a breeding ground for germs, dust, and dirt. Many people are unsure when it's time for a major cleaning. Let's look at these 5 warning signs.</p>
-                    <h2>1. Unpleasant Odors</h2>
-                    <p>If you open your car door and are greeted by a musty, food, or sour smell, it's a clear sign that bacteria and mold are growing in your car seats. Using an air freshener only masks the problem temporarily.</p>
-                    <h2>2. Visible Stains</h2>
-                    <p>Stains from coffee, soda, snacks, or sweat are not only unsightly but also a food source for germs. If left for too long, these stains will set in and become much harder to clean.</p>
-                </>
-            ),
-        }
     },
     "sofa-vs-carpet-cleaning": {
         id: "sofa-vs-carpet-cleaning",
         slug: {
             th: "ซักโซฟาต่างกับซักพรมอย่างไร",
-            en: "how-is-sofa-cleaning-different-from-carpet-cleaning",
         },
         image: "https://placehold.co/800x400.png",
         imageHint: "sofa carpet",
@@ -135,20 +94,5 @@ export const blogData: Record<string, BlogPost> = {
                 </>
             ),
         },
-        en: {
-            title: "Sofa Cleaning vs. Carpet Cleaning: What's the Difference?",
-            description: "Many people think sofa and carpet cleaning are the same. This article will clarify the differences in materials and cleaning methods.",
-            category: "Knowledge",
-             content: (
-                <>
-                    <p>Many people might think that sofa and carpet cleaning can be done using the same methods because they are both fabric-based furnishings. However, in reality, there are significant differences between the two that affect the appropriate cleaning approach.</p>
-                    <h2>Key Differences</h2>
-                    <ol>
-                        <li><strong>Structure and Internal Materials:</strong> Sofas have a much more complex structure, including a wooden frame, foam, springs, and other upholstery materials. In contrast, carpets only consist of a layer of fibers and a backing. Using too much water when cleaning a sofa can damage the internal materials, leading to mold and musty odors.</li>
-                        <li><strong>Fiber Types:</strong> Upholstery fabrics are highly diverse, ranging from cotton, linen, and velvet to synthetic fabrics. Each type responds differently to cleaning solutions and methods. Carpets, on the other hand, are mostly made from more durable synthetic fibers.</li>
-                    </ol>
-                </>
-            ),
-        }
     },
 };

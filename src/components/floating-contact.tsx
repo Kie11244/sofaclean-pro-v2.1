@@ -6,14 +6,11 @@ import { FacebookIcon } from './icons/facebook-icon';
 import { LineIcon } from './icons/line-icon';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { dictionaries } from '@/lib/client-dictionaries';
-import { i18n, type Locale } from '@/i18n.config';
+import dict from '@/lib/dictionaries/th.json';
 
-export function FloatingContact({ locale }: { locale: Locale }) {
+export function FloatingContact() {
     const [isOpen, setIsOpen] = useState(false);
     
-    const dict = dictionaries[locale] ? dictionaries[locale].sync() : dictionaries[i18n.defaultLocale].sync();
-
     const contactLinks = [
         {
             href: "https://www.facebook.com/your-page",

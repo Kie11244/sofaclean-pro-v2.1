@@ -8,47 +8,41 @@ import { JsonLD } from '@/components/json-ld';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { getDictionary } from '@/lib/dictionaries';
-import { Header } from '@/components/header';
-import { i18n, type Locale } from '@/i18n.config';
-import { FloatingContact } from '@/components/floating-contact';
+import dict from '@/lib/dictionaries/th.json';
 
-export async function generateStaticParams({ params }: { params: { locale: Locale } }) {
-  const paths = Object.values(blogData).flatMap(post => {
-    return i18n.locales.map(locale => {
-      return { locale: locale, slug: post.slug[locale] };
-    });
+export async function generateStaticParams() {
+  const paths = Object.values(blogData).map(post => {
+    return { slug: post.slug.th };
   });
   return paths;
 }
 
-export async function generateMetadata({ params }: { params: { slug: string, locale: Locale } }) {
-    const post = Object.values(blogData).find(p => p.slug[params.locale] === decodeURIComponent(params.slug));
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+    const post = Object.values(blogData).find(p => p.slug.th === decodeURIComponent(params.slug));
     if (!post) {
         return {};
     }
-    const postContent = post[params.locale];
+    const postContent = post.th;
     return {
         title: `${postContent.title} | Clean & Care Pro`,
         description: postContent.description,
     };
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string, locale: Locale } }) {
-  const post = Object.values(blogData).find(p => p.slug[params.locale] === decodeURIComponent(params.slug));
-  const dict = await getDictionary(params.locale);
+export default function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = Object.values(blogData).find(p => p.slug.th === decodeURIComponent(params.slug));
 
   if (!post) {
     notFound();
   }
-  const postContent = post[params.locale];
+  const postContent = post.th;
 
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
     "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://your-website-url.com/${params.locale}/blog/${post.slug[params.locale]}`
+        "@id": `https://your-website-url.com/blog/${post.slug.th}`
     },
     "headline": postContent.title,
     "description": postContent.description,
@@ -66,7 +60,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
         }
     },
     "datePublished": post.date,
-    "inLanguage": params.locale
+    "inLanguage": "th"
   };
 
   const relatedPosts = Object.values(blogData).filter(p => p.id !== post.id).slice(0, 2);
@@ -74,12 +68,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
   return (
     <>
       <JsonLD data={articleSchema} />
-      <Header locale={params.locale}/>
       <div className="bg-background pt-20">
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="flex justify-between items-center mb-8">
             <Button asChild variant="link" className="text-emerald-600 hover:underline p-0 h-auto">
-              <Link href={`/${params.locale}/blog`}>
+              <Link href="/blog">
                 <ArrowLeft className="mr-2 h-4 w-4" /> {dict.blogPost.back}
               </Link>
             </Button>
@@ -114,7 +107,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                 <div className="mt-8 p-6 bg-emerald-50 rounded-lg border-l-4 border-emerald-500 not-prose">
                     <h3 className="font-bold text-lg text-emerald-800">{dict.blogPost.cta.title}</h3>
                     <p className="text-emerald-900">
-                        {dict.blogPost.cta.description} <Link href={`/${params.locale}#services`} className="text-emerald-700 font-bold hover:underline">{dict.blogPost.cta.link}</Link> {dict.blogPost.cta.end}
+                        {dict.blogPost.cta.description} <Link href="/#services" className="text-emerald-700 font-bold hover:underline">{dict.blogPost.cta.link}</Link> {dict.blogPost.cta.end}
                     </p>
                 </div>
             </article>
@@ -124,8 +117,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
                     <h3 className="text-xl font-bold mb-4">{dict.blogPost.related.title}</h3>
                     <div className="space-y-4">
                         {relatedPosts.map(related => {
-                            const relatedContent = related[params.locale];
-                            const relatedUrl = `/${params.locale}/blog/${related.slug[params.locale]}`;
+                            const relatedContent = related.th;
+                            const relatedUrl = `/blog/${related.slug.th}`;
                             return (
                              <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
                                 <Link href={relatedUrl} className="block">
@@ -142,7 +135,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
           </div>
         </div>
       </div>
-      <FloatingContact locale={params.locale} />
       <footer className="bg-gray-900 text-white">
         <div className="container mx-auto px-6 py-8 text-center">
             <p>&copy; 2024 Clean & Care Pro. All Rights Reserved.</p>
