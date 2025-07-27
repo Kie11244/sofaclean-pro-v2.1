@@ -37,7 +37,7 @@ export function Header() {
 
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center space-x-6">
-                        {navLinks.map((link: { href: string; label: string; }) => (
+                        {navLinks && navLinks.map((link: { href: string; label: string; }) => (
                             <Link key={link.href} href={link.href} className="font-medium hover:text-emerald-500 transition-colors">
                                 {link.label}
                             </Link>
@@ -63,7 +63,7 @@ export function Header() {
                 isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
             )}>
                 <nav className="flex flex-col items-center p-6 space-y-4">
-                     {navLinks.map((link: { href: string; label: string; }) => (
+                     {navLinks && navLinks.map((link: { href: string; label: string; }) => (
                         <Link key={link.href} href={link.href} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
                             {link.label}
                         </Link>
