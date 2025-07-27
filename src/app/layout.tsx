@@ -3,12 +3,25 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/auth-context';
 import { Kanit } from 'next/font/google';
-import { i18n } from '@/i18n.config';
+import { i18n, type Locale } from '@/i18n.config';
 
-export const metadata: Metadata = {
-  title: 'Clean & Care Pro',
-  description: 'บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม และที่นอน โดยทีมงานมืออาชีพ',
-};
+export async function generateMetadata({
+  params: { locale },
+}: {
+  params: { locale: Locale };
+}): Promise<Metadata> {
+  if (locale === 'th') {
+    return {
+      title: 'Clean & Care Pro - บริการซักโซฟา ซักเบาะรถยนต์ โดยมืออาชีพ',
+      description: 'บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม และที่นอน โดยทีมงานมืออาชีพ Clean & Care Pro บริการถึงบ้านและคอนโดในกรุงเทพและปริมณฑล',
+    }
+  } else {
+     return {
+      title: 'Clean & Care Pro - Professional Sofa & Car Seat Cleaning',
+      description: 'Professional sofa, car seat, carpet, and mattress cleaning services by Clean & Care Pro. On-site service in Bangkok and surrounding areas.',
+    }
+  }
+}
 
 const kanit = Kanit({
   subsets: ['latin', 'thai'],
