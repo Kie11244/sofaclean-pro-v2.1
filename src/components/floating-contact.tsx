@@ -7,12 +7,12 @@ import { LineIcon } from './icons/line-icon';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { dictionaries } from '@/lib/client-dictionaries';
-import { Locale } from '@/i18n.config';
+import { i18n, type Locale } from '@/i18n.config';
 
 export function FloatingContact({ locale }: { locale: Locale }) {
     const [isOpen, setIsOpen] = useState(false);
     
-    const dict = dictionaries[locale].sync();
+    const dict = dictionaries[locale] ? dictionaries[locale].sync() : dictionaries[i18n.defaultLocale].sync();
 
     const contactLinks = [
         {

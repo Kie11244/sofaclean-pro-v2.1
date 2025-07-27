@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { dictionaries } from '@/lib/client-dictionaries';
 import { cn } from '@/lib/utils';
-import type { Locale } from '@/i18n.config';
+import { i18n, type Locale } from '@/i18n.config';
 
 export function Header({ locale }: { locale: Locale }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const dict = dictionaries[locale].sync();
+    const dict = dictionaries[locale] ? dictionaries[locale].sync() : dictionaries[i18n.defaultLocale].sync();
 
     const navLinks = dict.navigation.links;
     const baseLocalePath = locale === 'th' ? '' : `/${locale}`;
