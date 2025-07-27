@@ -44,7 +44,8 @@ const localBusinessSchema = {
     "sameAs": [ "https://www.facebook.com/your-page", "https://line.me/ti/p/~yourlineid" ]
 };
 
-export default async function Home({ params: { locale } }: { params: { locale: Locale } }) {
+export default async function Home(props: { params: { locale: Locale } }) {
+  const locale = props.params.locale;
   const dict = await getDictionary(locale);
   const blogPosts = Object.values(blogData).slice(0, 3);
   
