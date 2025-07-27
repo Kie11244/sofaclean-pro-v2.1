@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
 import { i18n, type Locale } from '@/i18n.config';
+import { FloatingContact } from '@/components/floating-contact';
 
 export async function generateStaticParams({ params }: { params: { locale: Locale } }) {
   const paths = Object.values(blogData).flatMap(post => {
@@ -141,6 +142,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
           </div>
         </div>
       </div>
+      <FloatingContact locale={params.locale} />
       <footer className="bg-gray-900 text-white">
         <div className="container mx-auto px-6 py-8 text-center">
             <p>&copy; 2024 Clean & Care Pro. All Rights Reserved.</p>

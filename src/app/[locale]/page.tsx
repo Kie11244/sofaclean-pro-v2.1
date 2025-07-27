@@ -12,6 +12,7 @@ import { blogData } from '@/lib/blog-data';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
 import { i18n, type Locale } from '@/i18n.config';
+import { FloatingContact } from '@/components/floating-contact';
 
 export async function generateStaticParams() {
   return i18n.locales.map(locale => ({ locale: locale }))
@@ -265,6 +266,7 @@ export default async function Home({ params: { locale } }: { params: { locale: L
         </Reveal>
       </main>
 
+      <FloatingContact locale={locale} />
       <footer className="bg-gray-900 text-white">
         <div className="container mx-auto px-6 py-8 text-center">
             <p>&copy; 2024 Clean & Care Pro. All Rights Reserved.</p>

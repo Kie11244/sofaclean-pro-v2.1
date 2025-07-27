@@ -7,6 +7,7 @@ import { Reveal } from '@/components/reveal';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
 import type { Locale } from '@/i18n.config';
+import { FloatingContact } from '@/components/floating-contact';
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: Locale } }) {
   const dict = await getDictionary(locale);
@@ -71,6 +72,7 @@ export default async function BlogIndexPage({ params: { locale } }: { params: { 
                 )})}
             </div>
         </main>
+        <FloatingContact locale={locale} />
          <footer className="bg-gray-900 text-white">
             <div className="container mx-auto px-6 py-8 text-center">
                 <p>&copy; 2024 Clean & Care Pro. All Rights Reserved.</p>

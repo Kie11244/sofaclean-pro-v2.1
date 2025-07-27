@@ -13,9 +13,12 @@ function getLocale(request: NextRequest): string | undefined {
   const locales: string[] = i18n.locales as any;
   const languages = new Negotiator({headers: negotiatorHeaders}).languages();
 
-  const locale = matchLocale(languages, locales, i18n.defaultLocale);
-
-  return locale;
+  try {
+    return matchLocale(languages, locales, i18n.defaultLocale);
+  } catch (error) {
+    // Fallback to default locale if match fails
+    return i18n.defaultLocale;
+  }
 }
 
 export function middleware(request: NextRequest) {
@@ -40,6 +43,7 @@ export function middleware(request: NextRequest) {
       )
     );
   }
+  return NextResponse.next();
 }
 
 export const config = {
