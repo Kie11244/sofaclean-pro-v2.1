@@ -33,9 +33,20 @@ export function middleware(request: NextRequest) {
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
     
+    // Redirect to the default locale if the detected locale is not the default
+    // or if the path is the root.
+    if (pathname === '/') {
+       return NextResponse.redirect(
+        new URL(
+          `/${locale}`,
+          request.url
+        )
+      );
+    }
+   
     return NextResponse.redirect(
       new URL(
-        `/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
+        `/${locale}${pathname}`,
         request.url
       )
     );

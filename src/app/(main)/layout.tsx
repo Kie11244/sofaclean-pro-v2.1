@@ -1,10 +1,6 @@
-import { i18n, type Locale } from '@/i18n.config';
-import { getDictionary } from '@/lib/dictionaries';
 import { FloatingContact } from '@/components/floating-contact';
-
-export async function generateStaticParams() {
-  return i18n.locales.map(locale => ({ locale: locale }))
-}
+import { getDictionary } from '@/lib/dictionaries';
+import { i18n, type Locale } from '@/i18n.config';
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: Locale } }) {
   const dict = await getDictionary(locale);
@@ -14,7 +10,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
   };
 }
 
-export default async function LocaleLayout({
+export default async function MainLayout({
   children,
   params,
 }: {

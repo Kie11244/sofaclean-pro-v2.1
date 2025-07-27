@@ -11,7 +11,11 @@ import { JsonLD } from '@/components/json-ld';
 import { blogData } from '@/lib/blog-data';
 import { getDictionary } from '@/lib/dictionaries';
 import { Header } from '@/components/header';
-import type { Locale } from '@/i18n.config';
+import { i18n, type Locale } from '@/i18n.config';
+
+export async function generateStaticParams() {
+  return i18n.locales.map(locale => ({ locale: locale }))
+}
 
 const localBusinessSchema = {
     "@context": "https://schema.org",
