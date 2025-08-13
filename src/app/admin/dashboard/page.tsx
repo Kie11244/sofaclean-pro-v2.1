@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Newspaper } from 'lucide-react';
+import { Newspaper, HardDriveUpload } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -54,6 +54,22 @@ export default function DashboardPage() {
                     </p>
                     <Button asChild>
                         <Link href="/admin/blog">ไปยังหน้าจัดการบทความ</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        ย้ายข้อมูลเก่า
+                    </CardTitle>
+                    <HardDriveUpload className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <p className="text-xs text-muted-foreground mb-4">
+                        นำเข้าบทความเก่า 3 ชิ้นจากโค้ด (ทำครั้งเดียว)
+                    </p>
+                    <Button asChild variant="secondary">
+                        <Link href="/admin/migrate">ไปยังหน้าย้ายข้อมูล</Link>
                     </Button>
                 </CardContent>
             </Card>

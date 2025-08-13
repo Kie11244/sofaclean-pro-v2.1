@@ -2,20 +2,31 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, limit, DocumentData } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Reveal } from '@/components/reveal';
 import { JsonLD } from '@/components/json-ld';
-import { blogData } from '@/lib/blog-data';
 import dict from '@/lib/dictionaries/th.json';
 
+interface Post extends DocumentData {
+    id: string;
+    title: string;
+    slug: string;
+    image: string;
+    imageHint: string;
+    date: string;
+    category: string;
+    description: string;
+}
 
 const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Clean & Care Pro",
+    "name": "SofaClean Pro",
     "image": "https://placehold.co/2070x1380.png",
     "@id": "",
     "url": "https://your-website-url.com",
@@ -38,8 +49,15 @@ const localBusinessSchema = {
     "sameAs": [ "https://www.facebook.com/your-page", "https://line.me/ti/p/~yourlineid" ]
 };
 
-export default function Home() {
-  const blogPosts = Object.values(blogData).slice(0, 3);
+async function getRecentPosts(): Promise<Post[]> {
+    const postsCol = query(collection(db, 'posts'), orderBy('date', 'desc'), limit(3));
+    const postSnapshot = await getDocs(postsCol);
+    const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+    return postList;
+}
+
+export default async function Home() {
+  const blogPosts = await getRecentPosts();
   
   const faqData = dict.faqData;
   const whyUsData = dict.whyUsData;
@@ -135,32 +153,37 @@ export default function Home() {
             <Reveal>
               <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{dict.blog.title}</h2>
             </Reveal>
-            <div className="grid md:grid-cols-3 gap-8">
-              {blogPosts.map((post, index) => {
-                const postContent = post.th;
-                const postUrl = `/blog/${post.slug}`;
-                return (
-                <Reveal key={post.id} delay={`${index * 200}ms`}>
-                  <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
-                    <Link href={postUrl} className="block">
-                      <div className="overflow-hidden">
-                        <Image className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={post.image} alt={postContent.title} width={600} height={400} data-ai-hint={post.imageHint} />
-                      </div>
-                    </Link>
-                    <CardContent className="p-6 flex flex-col flex-grow">
-                      <p className="text-sm text-emerald-600 font-semibold mb-2">{postContent.category}</p>
-                      <h3 className="font-bold text-xl mb-2 group-hover:text-emerald-700 transition-colors">
-                        <Link href={postUrl}>{postContent.title}</Link>
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-4 flex-grow">{postContent.description}</p>
-                      <Link href={postUrl} className="font-semibold text-emerald-600 hover:text-emerald-700 self-start">
-                        {dict.blog.readMore}
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </Reveal>
-              )})}
-            </div>
+             {blogPosts.length > 0 ? (
+                <div className="grid md:grid-cols-3 gap-8">
+                {blogPosts.map((post, index) => {
+                    const postUrl = `/blog/${post.slug}`;
+                    return (
+                    <Reveal key={post.id} delay={`${index * 200}ms`}>
+                    <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
+                        <Link href={postUrl} className="block">
+                        <div className="overflow-hidden">
+                            <Image className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={post.image} alt={post.title} width={600} height={400} data-ai-hint={post.imageHint} />
+                        </div>
+                        </Link>
+                        <CardContent className="p-6 flex flex-col flex-grow">
+                        <p className="text-sm text-emerald-600 font-semibold mb-2">{post.category}</p>
+                        <h3 className="font-bold text-xl mb-2 group-hover:text-emerald-700 transition-colors">
+                            <Link href={postUrl}>{post.title}</Link>
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-4 flex-grow">{post.description}</p>
+                        <Link href={postUrl} className="font-semibold text-emerald-600 hover:text-emerald-700 self-start">
+                            {dict.blog.readMore}
+                        </Link>
+                        </CardContent>
+                    </Card>
+                    </Reveal>
+                )})}
+                </div>
+             ) : (
+                <div className="text-center py-10">
+                    <p className="text-muted-foreground">ยังไม่มีบทความล่าสุด</p>
+                </div>
+             )}
             <div className="text-center mt-12">
                   <Button asChild size="lg" variant="outline">
                       <Link href="/blog">
@@ -260,7 +283,7 @@ export default function Home() {
         
         <footer className="bg-gray-900 text-white">
           <div className="container mx-auto px-6 py-8 text-center">
-              <p>&copy; 2024 Clean & Care Pro. All Rights Reserved.</p>
+              <p>&copy; 2024 SofaClean Pro. All Rights Reserved.</p>
               <p className="text-sm text-gray-400 mt-1">{dict.footer.tagline}</p>
           </div>
         </footer>
