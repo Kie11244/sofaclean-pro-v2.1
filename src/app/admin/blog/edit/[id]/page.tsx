@@ -1,0 +1,184 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, FormEvent } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface PostData {
+    title: string;
+    slug: string;
+    image: string;
+    imageHint: string;
+    category: string;
+    description: string;
+    content: string;
+}
+
+export default function EditBlogPostPage() {
+    const [post, setPost] = useState<PostData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    
+    const router = useRouter();
+    const params = useParams();
+    const { id } = params;
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (!id) return;
+        const fetchPost = async () => {
+            try {
+                const docRef = doc(db, "posts", id as string);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setPost(docSnap.data() as PostData);
+                } else {
+                    toast({
+                        variant: "destructive",
+                        title: "ไม่พบบทความ",
+                        description: "ไม่พบข้อมูลสำหรับบทความนี้",
+                    });
+                    router.push("/admin/blog");
+                }
+            } catch (error) {
+                console.error("Error fetching document: ", error);
+                 toast({
+                    variant: "destructive",
+                    title: "เกิดข้อผิดพลาด",
+                    description: "ไม่สามารถโหลดข้อมูลได้",
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPost();
+    }, [id, router, toast]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setPost(prev => prev ? { ...prev, [name]: value } : null);
+    };
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!post || !post.title || !post.slug || !post.content) {
+            toast({
+                variant: "destructive",
+                title: "ข้อมูลไม่ครบถ้วน",
+                description: "กรุณากรอกข้อมูลให้ครบถ้วน",
+            });
+            return;
+        }
+        setSaving(true);
+        try {
+            const docRef = doc(db, "posts", id as string);
+            await setDoc(docRef, post, { merge: true });
+            toast({
+                title: "บันทึกสำเร็จ",
+                description: "บทความของคุณได้รับการอัปเดตแล้ว",
+            });
+            router.push("/admin/blog");
+        } catch (error) {
+            console.error("Error updating document: ", error);
+            toast({
+                variant: "destructive",
+                title: "เกิดข้อผิดพลาด",
+                description: "ไม่สามารถบันทึกบทความได้",
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 p-8">
+                <div className="max-w-4xl mx-auto">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-full" /></div>
+                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-full" /></div>
+                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-24 w-full" /></div>
+                            <div className="flex justify-end gap-4">
+                                <Skeleton className="h-10 w-24" />
+                                <Skeleton className="h-10 w-24" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
+    }
+    
+    if (!post) {
+        return null; // or a not found component
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-8">
+            <div className="max-w-4xl mx-auto">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>แก้ไขบทความ</CardTitle>
+                        <CardDescription>อัปเดตรายละเอียดด้านล่างสำหรับบทความของคุณ</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="title">หัวข้อเรื่อง *</Label>
+                                <Input id="title" name="title" value={post.title} onChange={handleInputChange} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="slug">Slug (สำหรับ URL) *</Label>
+                                <Input id="slug" name="slug" value={post.slug} onChange={handleInputChange} required />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="category">หมวดหมู่ *</Label>
+                                <Input id="category" name="category" value={post.category} onChange={handleInputChange} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description">คำอธิบายสั้นๆ *</Label>
+                                <Textarea id="description" name="description" value={post.description} onChange={handleInputChange} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="content">เนื้อหาบทความ (HTML) *</Label>
+                                <Textarea id="content" name="content" value={post.content} onChange={handleInputChange} rows={15} required />
+                                <p className="text-sm text-muted-foreground">คุณสามารถใช้แท็ก HTML เช่น &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt; ในการจัดรูปแบบ</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="image">URL รูปภาพหลัก</Label>
+                                <Input id="image" name="image" value={post.image} onChange={handleInputChange} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="imageHint">คำใบ้รูปภาพ (สำหรับ AI)</Label>
+                                <Input id="imageHint" name="imageHint" value={post.imageHint} onChange={handleInputChange} />
+                            </div>
+                            <div className="flex justify-end gap-4">
+                                <Button variant="outline" type="button" onClick={() => router.push('/admin/blog')}>
+                                    ยกเลิก
+                                </Button>
+                                <Button type="submit" disabled={saving}>
+                                    {saving ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+}
