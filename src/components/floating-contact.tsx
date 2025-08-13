@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { MessageSquare, X, Phone } from 'lucide-react';
+import { Phone as ContactIcon, X, Phone } from 'lucide-react';
 import { FacebookIcon } from './icons/facebook-icon';
 import { LineIcon } from './icons/line-icon';
 import { cn } from '@/lib/utils';
@@ -70,7 +70,7 @@ export function FloatingContact() {
                 size="icon"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white w-16 h-16 rounded-full shadow-xl focus:outline-none relative"
             >
-                <MessageSquare className={cn("h-8 w-8 transition-all duration-300", isOpen ? 'opacity-0 scale-50 rotate-45' : 'opacity-100 scale-100 rotate-0')} />
+                <ContactIcon className={cn("h-8 w-8 transition-all duration-300", isOpen ? 'opacity-0 scale-50 rotate-45' : 'opacity-100 scale-100 rotate-0')} />
                 <X className={cn("h-8 w-8 absolute transition-all duration-300", isOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-45')} />
             </Button>
         </div>
