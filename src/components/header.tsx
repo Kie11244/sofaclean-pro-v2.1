@@ -1,8 +1,8 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import dict from '@/lib/dictionaries/th.json';
@@ -11,8 +11,11 @@ import { cn } from '@/lib/utils';
 export function Header() {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const pathname = usePathname();
     
     const navLinks = dict.navigation.links;
+
+    const isHomePage = pathname === '/';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -22,15 +25,17 @@ export function Header() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const isTransparent = isHomePage && !isScrolled && !isOpen;
+
     return (
         <header className={cn(
             "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-            isScrolled || isOpen ? "bg-white shadow-md text-gray-800" : "bg-transparent text-white"
+            isTransparent ? "bg-transparent text-white" : "bg-white shadow-md text-gray-800"
         )}>
             <div className="container mx-auto px-6">
                 <div className="flex items-center justify-between h-20">
                     <div className="text-2xl font-bold">
-                        <Link href="/" className={cn(isScrolled || isOpen ? "text-emerald-600" : "text-white")}>
+                        <Link href="/" className={cn(isTransparent ? "text-white" : "text-emerald-600")}>
                             Clean & Care
                         </Link>
                     </div>
