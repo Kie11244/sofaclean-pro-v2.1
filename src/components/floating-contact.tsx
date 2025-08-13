@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Phone as ContactIcon, X, Phone } from 'lucide-react';
 import { FacebookIcon } from './icons/facebook-icon';
 import { LineIcon } from './icons/line-icon';
@@ -10,10 +10,29 @@ import dict from '@/lib/dictionaries/th.json';
 
 export function FloatingContact() {
     const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
     
     const handleLinkClick = () => {
         setIsOpen(false);
     };
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
 
     const contactLinks = [
         {
@@ -39,7 +58,7 @@ export function FloatingContact() {
     const toggleButtonLabel = isOpen ? dict.floatingContact.close : dict.floatingContact.open;
 
     return (
-        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-center">
+        <div ref={wrapperRef} className="fixed bottom-5 right-5 z-50 flex flex-col items-center">
             <div className={cn(
                 "flex flex-col items-center gap-3 mb-3 transition-all duration-300 ease-in-out",
                 isOpen ? 'max-h-96 opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-4 overflow-hidden'
