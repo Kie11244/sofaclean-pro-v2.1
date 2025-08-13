@@ -1,3 +1,4 @@
+
 export interface BlogPostContent {
     title: string;
     description: string;
@@ -17,7 +18,7 @@ export interface BlogPost {
 export const blogData: Record<string, BlogPost> = {
     "how-to-clean-sofa": {
         id: "how-to-clean-sofa",
-        slug: "วิธีซักโซฟาผ้าด้วยตัวเอง",
+        slug: "how-to-clean-fabric-sofa",
         image: "https://placehold.co/800x400.png",
         imageHint: "woman cleaning sofa",
         date: "2024-07-21",
@@ -46,7 +47,7 @@ export const blogData: Record<string, BlogPost> = {
     },
     "when-to-clean-car-seats": {
         id: "when-to-clean-car-seats",
-        slug: "สัญญาณเตือนซักเบาะรถ",
+        slug: "when-to-clean-car-seats",
         image: "https://placehold.co/800x400.png",
         imageHint: "car seat interior",
         date: "2024-07-18",
@@ -67,7 +68,7 @@ export const blogData: Record<string, BlogPost> = {
     },
     "sofa-vs-carpet-cleaning": {
         id: "sofa-vs-carpet-cleaning",
-        slug: "ซักโซฟาต่างกับซักพรมอย่างไร",
+        slug: "sofa-vs-carpet-cleaning-difference",
         image: "https://placehold.co/800x400.png",
         imageHint: "sofa carpet",
         date: "2024-07-15",
