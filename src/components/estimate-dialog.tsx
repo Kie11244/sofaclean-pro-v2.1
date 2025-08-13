@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileImage, Trash2 } from 'lucide-react';
+import { Upload, FileImage, Trash2, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 interface EstimateDialogProps {
@@ -36,6 +36,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
     const [description, setDescription] = useState("");
     const [images, setImages] = useState<ImageFile[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
@@ -43,6 +44,15 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
     const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (files) {
+            if (images.length + files.length > 5) {
+                toast({
+                    variant: "destructive",
+                    title: "จำกัด 5 รูปภาพ",
+                    description: "คุณสามารถแนบรูปภาพได้สูงสุด 5 รูป",
+                });
+                return;
+            }
+
             const newImages: ImageFile[] = [];
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -59,13 +69,60 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                     previewUrl: URL.createObjectURL(file)
                 });
             }
-            setImages(prev => [...prev, ...newImages]);
+            setImages(prev => [...prev, ...newImages].slice(0, 5));
         }
     };
     
     const removeImage = (index: number) => {
         setImages(prev => prev.filter((_, i) => i !== index));
     }
+
+    const handleFetchLocation = () => {
+        if (!navigator.geolocation) {
+            toast({
+                variant: "destructive",
+                title: "ไม่รองรับ Geolocation",
+                description: "เบราว์เซอร์ของคุณไม่รองรับการใช้งานนี้",
+            });
+            return;
+        }
+
+        setIsFetchingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    // Using a free reverse geocoding service (Nominatim)
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+                    const data = await response.json();
+                    if (data && data.display_name) {
+                        setAddress(data.display_name);
+                    } else {
+                         throw new Error("Could not fetch address");
+                    }
+                } catch (error) {
+                     toast({
+                        variant: "destructive",
+                        title: "ไม่สามารถดึงที่อยู่ได้",
+                        description: "กรุณาลองอีกครั้งหรือพิมพ์ด้วยตนเอง",
+                    });
+                     // Fallback to coordinates if API fails
+                    setAddress(`Lat: ${latitude}, Lon: ${longitude}`);
+                } finally {
+                    setIsFetchingLocation(false);
+                }
+            },
+            (error) => {
+                toast({
+                    variant: "destructive",
+                    title: "ไม่สามารถเข้าถึงตำแหน่งได้",
+                    description: "กรุณาอนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์ของคุณ",
+                });
+                setIsFetchingLocation(false);
+            }
+        );
+    };
+
 
     const handleFormSubmit = async () => {
         if (!name.trim() || !phone.trim() || !description.trim()) {
@@ -93,6 +150,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setAddress("");
         setDescription("");
         setImages([]);
+        setIsFetchingLocation(false);
     };
 
     const handleOpenChange = (open: boolean) => {
@@ -130,8 +188,25 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                         <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="เช่น 0812345678" />
                     </div>
                      <div className="grid gap-2">
-                        <Label htmlFor="address">ที่อยู่ (ถ้ามี)</Label>
-                        <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="ที่อยู่สำหรับเข้ารับบริการ" rows={2} />
+                        <div className="flex items-center justify-between">
+                             <Label htmlFor="address">ที่อยู่ (ถ้ามี)</Label>
+                             <Button variant="ghost" size="sm" onClick={handleFetchLocation} disabled={isFetchingLocation}>
+                                {isFetchingLocation ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <MapPin className="mr-2 h-4 w-4" />
+                                )}
+                                 ใช้ที่อยู่ปัจจุบัน
+                             </Button>
+                        </div>
+                        <Textarea 
+                            id="address" 
+                            value={address} 
+                            onChange={(e) => setAddress(e.target.value)} 
+                            placeholder={isFetchingLocation ? "กำลังดึงตำแหน่งปัจจุบัน..." : "ที่อยู่สำหรับเข้ารับบริการ"} 
+                            rows={2}
+                            disabled={isFetchingLocation}
+                        />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="description">รายละเอียดงาน <span className="text-red-500">*</span></Label>
@@ -144,7 +219,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="picture">แนบรูปภาพประกอบ</Label>
+                        <Label htmlFor="picture">แนบรูปภาพประกอบ (สูงสุด 5 รูป)</Label>
                         <Input
                             id="picture"
                             type="file"
@@ -158,6 +233,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                             <Upload className="mr-2 h-4 w-4" />
                             เลือกรูปภาพ
                         </Button>
+                         <p className="text-sm text-muted-foreground">แต่ละไฟล์ต้องมีขนาดไม่เกิน 4MB</p>
                     </div>
                     {images.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
