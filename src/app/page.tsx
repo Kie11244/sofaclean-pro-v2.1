@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Reveal } from '@/components/reveal';
 import { JsonLD } from '@/components/json-ld';
 import dict from '@/lib/dictionaries/th.json';
+import { EstimateDialog } from '@/components/estimate-dialog';
 
 interface Post extends DocumentData {
     id: string;
@@ -207,9 +208,9 @@ export default async function Home() {
                                   <li key={i} className="flex items-center"><Check className="text-green-500 mr-2" /> {feature}</li>
                               ))}
                           </ul>
-                          <Button asChild className="mt-auto w-full" variant="outline">
-                            <Link href="#booking">{dict.priceTable.cta}</Link>
-                          </Button>
+                          <EstimateDialog>
+                             <Button className="mt-auto w-full" variant="outline">{dict.priceTable.cta}</Button>
+                          </EstimateDialog>
                       </div>
                   </Reveal>
                   <Reveal delay="200ms">
@@ -224,9 +225,9 @@ export default async function Home() {
                                   <li key={i} className="flex items-center"><Check className="text-yellow-400 mr-2" /> {feature}</li>
                               ))}
                           </ul>
-                          <Button asChild className="mt-auto w-full bg-white hover:bg-gray-100 text-emerald-600 font-bold">
-                              <Link href="#booking">{dict.priceTable.cta}</Link>
-                          </Button>
+                           <EstimateDialog>
+                               <Button className="mt-auto w-full bg-white hover:bg-gray-100 text-emerald-600 font-bold">{dict.priceTable.cta}</Button>
+                           </EstimateDialog>
                       </div>
                   </Reveal>
                   <Reveal delay="400ms">
@@ -240,9 +241,9 @@ export default async function Home() {
                                   <li key={i} className="flex items-center"><Check className="text-green-500 mr-2" /> {feature}</li>
                               ))}
                           </ul>
-                          <Button asChild className="mt-auto w-full" variant="outline">
-                            <Link href="#booking">{dict.priceTable.cta}</Link>
-                          </Button>
+                          <EstimateDialog>
+                             <Button className="mt-auto w-full" variant="outline">{dict.priceTable.cta}</Button>
+                          </EstimateDialog>
                       </div>
                   </Reveal>
               </div>
