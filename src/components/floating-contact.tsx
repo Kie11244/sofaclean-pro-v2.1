@@ -11,6 +11,10 @@ import dict from '@/lib/dictionaries/th.json';
 export function FloatingContact() {
     const [isOpen, setIsOpen] = useState(false);
     
+    const handleLinkClick = () => {
+        setIsOpen(false);
+    };
+
     const contactLinks = [
         {
             href: "https://www.facebook.com/your-page",
@@ -21,7 +25,7 @@ export function FloatingContact() {
         {
             href: "https://line.me/ti/p/~yourlineid",
             label: "Line",
-            icon: <LineIcon className="h-8 w-8 text-white" />,
+            icon: <LineIcon className="h-7 w-7 text-white" />,
             bgClass: "bg-green-500 hover:bg-green-600"
         },
         {
@@ -46,6 +50,7 @@ export function FloatingContact() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={handleLinkClick}
                         className={cn(
                             "w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-110",
                             link.bgClass
