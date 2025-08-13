@@ -3,15 +3,15 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// TODO: Add your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyB9YpDlMVlzAzhsOterC8IYuETWWVNUvFc",
+  authDomain: "psychic-glider-453312-k0.firebaseapp.com",
+  projectId: "psychic-glider-453312-k0",
+  storageBucket: "psychic-glider-453312-k0.appspot.com",
+  messagingSenderId: "318494311599",
+  appId: "1:318494311599:web:1e862a3f03d818b592805a",
+  measurementId: "G-LM2PXWDHFZ"
 };
 
 // Initialize Firebase
