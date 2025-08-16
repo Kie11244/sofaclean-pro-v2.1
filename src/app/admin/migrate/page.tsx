@@ -13,7 +13,7 @@ import Link from 'next/link';
 const oldBlogData = [
     {
         id: "how-to-clean-sofa",
-        slug: "how-to-clean-fabric-sofa",
+        slug: "วิธีซักโซฟาผ้าด้วยตัวเองเบื้องต้น",
         image: "https://placehold.co/800x400.png",
         imageHint: "woman cleaning sofa",
         date: "2024-07-21",
@@ -26,7 +26,7 @@ const oldBlogData = [
     },
     {
         id: "when-to-clean-car-seats",
-        slug: "when-to-clean-car-seats",
+        slug: "5-สัญญาณเตือนถึงเวลาซักเบาะรถยนต์",
         image: "https://placehold.co/800x400.png",
         imageHint: "car seat interior",
         date: "2024-07-18",
@@ -39,7 +39,7 @@ const oldBlogData = [
     },
     {
         id: "sofa-vs-carpet-cleaning",
-        slug: "sofa-vs-carpet-cleaning-difference",
+        slug: "ซักโซฟา-กับ-ซักพรม-ต่างกันอย่างไร",
         image: "https://placehold.co/800x400.png",
         imageHint: "sofa carpet",
         date: "2024-07-15",
@@ -152,3 +152,4 @@ export default function MigratePage() {
     
 
     
+
