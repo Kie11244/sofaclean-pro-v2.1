@@ -41,7 +41,7 @@ export default function NewBlogPostPage() {
         }
         setLoading(true);
         try {
-            const docRef = await addDoc(collection(db, "posts"), {
+            await addDoc(collection(db, "posts"), {
                 title,
                 slug,
                 image: image || "https://placehold.co/800x400.png",
