@@ -13,10 +13,12 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
+    // Redirect to login page if not authenticated and not already on the login page.
     if (!loading && !user && window.location.pathname !== '/admin') {
       router.push('/admin');
     }
   }, [user, loading, router]);
 
-  return <>{children}</>;
+  // Add padding-top to push content below the fixed header
+  return <div className="pt-24">{children}</div>;
 }
