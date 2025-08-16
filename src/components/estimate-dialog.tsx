@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,20 +16,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, MapPin, Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import { db, storage } from '@/lib/firebase';
+import { MapPin, Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
 interface EstimateDialogProps {
     children: React.ReactNode;
-}
-
-interface ImageFile {
-    previewUrl: string;
-    file: File;
 }
 
 export function EstimateDialog({ children }: EstimateDialogProps) {
@@ -37,50 +30,12 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
     const [description, setDescription] = useState("");
-    const [images, setImages] = useState<ImageFile[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
-
-    const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (files) {
-            if (images.length + files.length > 5) {
-                toast({
-                    variant: "destructive",
-                    title: "จำกัด 5 รูปภาพ",
-                    description: "คุณสามารถแนบรูปภาพได้สูงสุด 5 รูป",
-                });
-                return;
-            }
-
-            const newImages: ImageFile[] = [];
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                 if (file.size > 5 * 1024 * 1024) { // 5MB limit per file
-                    toast({
-                        variant: "destructive",
-                        title: "รูปภาพมีขนาดใหญ่เกินไป",
-                        description: `ไฟล์ "${file.name}" มีขนาดใหญ่กว่า 5MB`,
-                    });
-                    continue; // Skip this file
-                }
-                newImages.push({
-                    file,
-                    previewUrl: URL.createObjectURL(file)
-                });
-            }
-            setImages(prev => [...prev, ...newImages].slice(0, 5));
-        }
-    };
     
-    const removeImage = (index: number) => {
-        setImages(prev => prev.filter((_, i) => i !== index));
-    }
-
     const handleFetchLocation = () => {
         if (!navigator.geolocation) {
             toast({
@@ -96,7 +51,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    // Using a CORS-friendly reverse geocoding service if available, or just showing coordinates.
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
                     const data = await response.json();
                     if (data && data.display_name) {
@@ -140,26 +94,11 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setIsSubmitting(true);
         
         try {
-            let uploadedImageUrls: string[] = [];
-
-            if (images.length > 0) {
-                 const uploadPromises = images.map(imageFile => {
-                    const storageRef = ref(storage, `quote_images/${Date.now()}_${imageFile.file.name}`);
-                    return uploadBytes(storageRef, imageFile.file).then(snapshot => {
-                        return getDownloadURL(snapshot.ref);
-                    });
-                });
-                
-                uploadedImageUrls = await Promise.all(uploadPromises);
-            }
-
-            // Save quote data to Firestore
             await addDoc(collection(db, "quotes"), {
                 name,
                 phone,
                 address,
                 description,
-                imageUrls: uploadedImageUrls,
                 createdAt: new Date(),
                 status: "new",
             });
@@ -188,7 +127,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setPhone("");
         setAddress("");
         setDescription("");
-        setImages([]);
         setIsFetchingLocation(false);
         setIsSubmitting(false);
     };
@@ -257,37 +195,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                             rows={3}
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="picture">แนบรูปภาพประกอบ (สูงสุด 5 รูป)</Label>
-                        <Input
-                            id="picture"
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageChange}
-                            className="hidden"
-                            accept="image/png, image/jpeg, image/webp"
-                            multiple
-                        />
-                        <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            เลือกรูปภาพ
-                        </Button>
-                         <p className="text-sm text-muted-foreground">แต่ละไฟล์ต้องมีขนาดไม่เกิน 5MB</p>
-                    </div>
-                    {images.length > 0 && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {images.map((image, index) => (
-                                <div key={index} className="relative group aspect-square rounded-md overflow-hidden border">
-                                    <Image src={image.previewUrl} alt={`Preview ${index + 1}`} layout="fill" objectFit="cover" />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
-                                         <Button variant="destructive" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => removeImage(index)}>
-                                             <Trash2 className="h-4 w-4" />
-                                         </Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
 
                 <DialogFooter>
