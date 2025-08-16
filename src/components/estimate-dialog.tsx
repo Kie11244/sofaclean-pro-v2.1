@@ -17,10 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileImage, Trash2, MapPin, Loader2 } from 'lucide-react';
+import { Upload, Trash2, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface EstimateDialogProps {
     children: React.ReactNode;
@@ -95,6 +96,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
+                    // Using a CORS-friendly reverse geocoding service if available, or just showing coordinates.
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
                     const data = await response.json();
                     if (data && data.display_name) {
@@ -139,24 +141,16 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         let uploadedImageUrls: string[] = [];
 
         try {
-            // 1. Upload images if any
+            // 1. Upload images if any, directly from the client
             if (images.length > 0) {
-                const formData = new FormData();
-                images.forEach(imageFile => {
-                    formData.append('files', imageFile.file);
+                const uploadPromises = images.map(imageFile => {
+                    const safeFileName = `quote_images/${Date.now()}_${imageFile.file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+                    const storageRef = ref(storage, safeFileName);
+                    return uploadBytes(storageRef, imageFile.file).then(snapshot => 
+                        getDownloadURL(snapshot.ref)
+                    );
                 });
-
-                const uploadResponse = await fetch('/api/upload-image', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const uploadResult = await uploadResponse.json();
-
-                if (!uploadResult.success || !uploadResult.urls) {
-                     throw new Error(uploadResult.error || "Image upload failed");
-                }
-                uploadedImageUrls = uploadResult.urls;
+                uploadedImageUrls = await Promise.all(uploadPromises);
             }
 
             // 2. Save quote data to Firestore
@@ -177,12 +171,12 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
 
             handleOpenChange(false);
 
-        } catch (error) {
+        } catch (error: any) {
              console.error("Error submitting quote:", error);
              toast({
                 variant: "destructive",
                 title: "เกิดข้อผิดพลาด",
-                description: "ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+                description: "ไม่สามารถส่งข้อมูลได้ กรุณาตรวจสอบ Console หรือลองใหม่อีกครั้ง",
             });
         } finally {
             setIsSubmitting(false);
@@ -308,4 +302,3 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         </Dialog>
     );
 }
-
