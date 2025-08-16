@@ -8,6 +8,7 @@ import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ArrowLeft } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,9 +84,17 @@ export default function BlogManagementPage() {
                                 <CardTitle>จัดการบทความ</CardTitle>
                                 <CardDescription>เพิ่ม, แก้ไข, หรือลบบทความในบล็อกของคุณ</CardDescription>
                             </div>
-                            <Button asChild>
-                                <Link href="/admin/blog/new">สร้างบทความใหม่</Link>
-                            </Button>
+                             <div className="flex items-center gap-4">
+                                <Button asChild>
+                                    <Link href="/admin/blog/new">สร้างบทความใหม่</Link>
+                                </Button>
+                                <Button variant="outline" asChild>
+                                    <Link href="/admin/dashboard">
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        กลับไปหน้า Dashboard
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>

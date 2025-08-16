@@ -19,7 +19,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import Link from 'next/link';
 
 export interface Quote {
     id: string;
@@ -94,8 +95,18 @@ export default function QuotesListPage() {
                 <div className="max-w-6xl mx-auto">
                     <Card>
                         <CardHeader>
-                            <CardTitle>รายการใบเสนอราคา</CardTitle>
-                            <CardDescription>จัดการคำขอใบเสนอราคาจากลูกค้า</CardDescription>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>รายการใบเสนอราคา</CardTitle>
+                                    <CardDescription>จัดการคำขอใบเสนอราคาจากลูกค้า</CardDescription>
+                                </div>
+                                <Button variant="outline" asChild>
+                                    <Link href="/admin/dashboard">
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        กลับไปหน้า Dashboard
+                                    </Link>
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {loading ? (

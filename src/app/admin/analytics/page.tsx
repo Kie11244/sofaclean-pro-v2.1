@@ -5,9 +5,11 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, Timestamp, query, where } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, Newspaper, Loader2 } from 'lucide-react';
+import { FileText, Newspaper, Loader2, ArrowLeft } from 'lucide-react';
 import { subDays, format, startOfDay } from 'date-fns';
 import { th } from 'date-fns/locale';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface Quote {
     id: string;
@@ -86,9 +88,17 @@ export default function AnalyticsPage() {
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-6xl mx-auto space-y-8">
-                 <div>
-                    <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-                    <p className="text-muted-foreground">ภาพรวมสถิติของเว็บไซต์คุณ</p>
+                 <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+                        <p className="text-muted-foreground">ภาพรวมสถิติของเว็บไซต์คุณ</p>
+                    </div>
+                    <Button variant="outline" asChild>
+                        <Link href="/admin/dashboard">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            กลับไปหน้า Dashboard
+                        </Link>
+                    </Button>
                 </div>
                 
                 <div className="grid gap-6 md:grid-cols-2">
