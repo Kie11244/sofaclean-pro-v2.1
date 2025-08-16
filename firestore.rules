@@ -3,31 +3,32 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Posts: Allow everyone to read, but only authenticated users (admins) to write.
-    // This is necessary for the blog and blog post pages to be public.
-    match /posts/{postId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
     
-    // Pages: Allow everyone to read the home page configuration (images, etc.).
-    // Only authenticated users (admins) can change these settings.
-    match /pages/{pageId} {
-       allow read: if true;
-       allow write: if request.auth != null;
+    // กฎสำหรับคอลเลกชัน "posts" (บทความ)
+    match /posts/{postId} {
+      // อนุญาตให้ทุกคนอ่านและแสดงรายการบทความได้ (สำคัญสำหรับหน้าแรกและหน้าบล็อก)
+      allow read, list: if true;
+      
+      // เฉพาะผู้ใช้ที่ล็อกอินแล้ว (แอดมิน) เท่านั้นที่สามารถเขียน, อัปเดต, หรือลบข้อมูลได้
+      allow write, update, delete: if request.auth != null;
     }
 
-    // Quotes: Allow anyone to create (submit) a quote request.
-    // Only authenticated users (admins) can read, update, or delete them.
+    // กฎสำหรับคอลเลกชัน "quotes" (ใบเสนอราคา)
     match /quotes/{quoteId} {
+      // อนุญาตให้ทุกคนสามารถสร้าง (ส่ง) ใบเสนอราคาได้
       allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      
+      // เฉพาะผู้ใช้ที่ล็อกอินแล้ว (แอดมิน) เท่านั้นที่สามารถอ่าน, อัปเดต, หรือลบได้
+      allow read, update, delete, list: if request.auth != null;
     }
 
-    // Users: Disallow any client-side access to user data for security.
-    match /users/{userId} {
-      allow read, write: if false;
+    // กฎสำหรับคอลเลกชัน "pages" (ข้อมูลหน้าเว็บ เช่น รูปภาพปก)
+    match /pages/{pageId} {
+      // อนุญาตให้ทุกคนสามารถอ่านข้อมูลสำหรับแสดงผลหน้าเว็บได้
+      allow read, list: if true;
+      
+      // เฉพาะผู้ใช้ที่ล็อกอินแล้ว (แอดมิน) เท่านั้นที่สามารถเขียนข้อมูลได้
+      allow write: if request.auth != null;
     }
   }
 }
