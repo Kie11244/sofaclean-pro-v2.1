@@ -126,7 +126,7 @@ export default function QuotesListPage() {
                                                             <AlertDialogDescription>
                                                                 การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
                                                             </AlertDialogDescription>
-                                                        </ScrollView>
+                                                        </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
                                                             <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
