@@ -21,6 +21,8 @@ interface Post extends DocumentData {
     category: string;
     description: string;
     content: string;
+    metaTitle?: string;
+    metaDescription?: string;
 }
 
 // Fetch all posts from Firestore
@@ -54,9 +56,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     if (!post) {
         return {};
     }
+    const metaTitle = post.metaTitle || post.title;
+    const metaDescription = post.metaDescription || post.description;
+
     return {
-        title: `${post.title} | SofaClean Pro`,
-        description: post.description,
+        title: `${metaTitle} | SofaClean Pro`,
+        description: metaDescription,
     };
 }
 

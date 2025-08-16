@@ -11,6 +11,9 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect, FormEvent } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Sparkles } from "lucide-react";
+
 
 interface PostData {
     title: string;
@@ -20,6 +23,8 @@ interface PostData {
     category: string;
     description: string;
     content: string;
+    metaTitle?: string;
+    metaDescription?: string;
 }
 
 export default function EditBlogPostPage() {
@@ -167,6 +172,42 @@ export default function EditBlogPostPage() {
                                 <Label htmlFor="imageHint">คำใบ้รูปภาพ (สำหรับ AI)</Label>
                                 <Input id="imageHint" name="imageHint" value={post.imageHint} onChange={handleInputChange} />
                             </div>
+
+                             <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="item-1">
+                                    <AccordionTrigger>
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles className="h-5 w-5 text-yellow-500" />
+                                            <span className="font-semibold">การตั้งค่า SEO</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="space-y-4 pt-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="metaTitle">Meta Title</Label>
+                                            <Input 
+                                                id="metaTitle" 
+                                                name="metaTitle" 
+                                                value={post.metaTitle || ""} 
+                                                onChange={handleInputChange} 
+                                                placeholder="หัวข้อที่จะแสดงบน Google (ถ้าเว้นว่างจะใช้หัวข้อเรื่อง)"
+                                            />
+                                            <p className="text-sm text-muted-foreground">แนะนำความยาวไม่เกิน 60 ตัวอักษร</p>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="metaDescription">Meta Description</Label>
+                                            <Textarea 
+                                                id="metaDescription" 
+                                                name="metaDescription" 
+                                                value={post.metaDescription || ""} 
+                                                onChange={handleInputChange} 
+                                                placeholder="คำอธิบายสั้นๆ สำหรับแสดงผลบน Google (ถ้าเว้นว่างจะใช้คำอธิบายสั้นๆ ด้านบน)"
+                                            />
+                                             <p className="text-sm text-muted-foreground">แนะนำความยาวไม่เกิน 160 ตัวอักษร</p>
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+
                             <div className="flex justify-end gap-4">
                                 <Button variant="outline" type="button" onClick={() => router.push('/admin/blog')}>
                                     ยกเลิก

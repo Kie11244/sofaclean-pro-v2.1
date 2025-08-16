@@ -10,6 +10,9 @@ import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent } from "react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Sparkles } from "lucide-react";
+
 
 export default function NewBlogPostPage() {
     const [title, setTitle] = useState('');
@@ -19,6 +22,8 @@ export default function NewBlogPostPage() {
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
     const [content, setContent] = useState('');
+    const [metaTitle, setMetaTitle] = useState('');
+    const [metaDescription, setMetaDescription] = useState('');
     const [loading, setLoading] = useState(false);
     
     const router = useRouter();
@@ -45,6 +50,8 @@ export default function NewBlogPostPage() {
                 category,
                 description,
                 content,
+                metaTitle: metaTitle || "",
+                metaDescription: metaDescription || "",
             });
             toast({
                 title: "สร้างบทความสำเร็จ",
@@ -116,6 +123,40 @@ export default function NewBlogPostPage() {
                                 <Label htmlFor="imageHint">คำใบ้รูปภาพ (สำหรับ AI)</Label>
                                 <Input id="imageHint" value={imageHint} onChange={(e) => setImageHint(e.target.value)} placeholder="เช่น sofa living room" />
                             </div>
+
+                             <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="item-1">
+                                    <AccordionTrigger>
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles className="h-5 w-5 text-yellow-500" />
+                                            <span className="font-semibold">การตั้งค่า SEO</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="space-y-4 pt-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="metaTitle">Meta Title</Label>
+                                            <Input 
+                                                id="metaTitle" 
+                                                value={metaTitle} 
+                                                onChange={(e) => setMetaTitle(e.target.value)} 
+                                                placeholder="หัวข้อที่จะแสดงบน Google (ถ้าเว้นว่างจะใช้หัวข้อเรื่อง)"
+                                            />
+                                            <p className="text-sm text-muted-foreground">แนะนำความยาวไม่เกิน 60 ตัวอักษร</p>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="metaDescription">Meta Description</Label>
+                                            <Textarea 
+                                                id="metaDescription" 
+                                                value={metaDescription} 
+                                                onChange={(e) => setMetaDescription(e.target.value)} 
+                                                placeholder="คำอธิบายสั้นๆ สำหรับแสดงผลบน Google (ถ้าเว้นว่างจะใช้คำอธิบายสั้นๆ ด้านบน)"
+                                            />
+                                             <p className="text-sm text-muted-foreground">แนะนำความยาวไม่เกิน 160 ตัวอักษร</p>
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+
                             <div className="flex justify-end gap-4">
                                 <Button variant="outline" type="button" onClick={() => router.back()}>
                                     ยกเลิก
