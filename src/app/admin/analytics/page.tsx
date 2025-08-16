@@ -32,6 +32,7 @@ export default function AnalyticsPage() {
     const [chartData, setChartData] = useState<ChartData[]>([]);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('7'); // Default to 7 days
+    const [initialLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
         const fetchStaticData = async () => {
@@ -84,13 +85,14 @@ export default function AnalyticsPage() {
                 console.error("Error fetching chart data: ", error);
             } finally {
                 setLoading(false);
+                if (initialLoad) setInitialLoad(false);
             }
         };
 
         fetchChartData();
-    }, [timeRange]);
+    }, [timeRange, initialLoad]);
 
-    if (loading && chartData.length === 0) { // Show initial loading screen
+    if (initialLoad) {
         return (
              <div className="flex justify-center items-center h-screen">
                  <Loader2 className="mr-2 h-16 w-16 animate-spin" />
@@ -98,6 +100,8 @@ export default function AnalyticsPage() {
             </div>
         );
     }
+
+    const hasDataForChart = chartData.some(d => d.quotes > 0);
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
@@ -157,29 +161,35 @@ export default function AnalyticsPage() {
                             </Select>
                         </div>
                     </CardHeader>
-                    <CardContent className="relative">
+                    <CardContent className="relative h-[350px]">
                          {loading && (
                             <div className="absolute inset-0 bg-white/70 flex justify-center items-center z-10 rounded-b-lg">
                                 <Loader2 className="mr-2 h-8 w-8 animate-spin" />
                             </div>
                         )}
-                        <ResponsiveContainer width="100%" height={350}>
-                            <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" stroke="#888888" fontSize={12} />
-                                <YAxis stroke="#888888" fontSize={12} allowDecimals={false} />
-                                <Tooltip
-                                     contentStyle={{
-                                        backgroundColor: 'white',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '0.5rem',
-                                    }}
-                                    labelStyle={{ fontWeight: 'bold' }}
-                                />
-                                <Legend />
-                                <Bar dataKey="quotes" fill="hsl(var(--primary))" name="ใบเสนอราคา" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {!loading && !hasDataForChart ? (
+                             <div className="flex h-full w-full items-center justify-center">
+                                <p className="text-muted-foreground">ไม่มีข้อมูลใบเสนอราคาในช่วงเวลานี้</p>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                                    <YAxis stroke="#888888" fontSize={12} allowDecimals={false} />
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'white',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '0.5rem',
+                                        }}
+                                        labelStyle={{ fontWeight: 'bold' }}
+                                    />
+                                    <Legend />
+                                    <Bar dataKey="quotes" fill="hsl(var(--primary))" name="ใบเสนอราคา" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                         )}
                     </CardContent>
                 </Card>
             </div>

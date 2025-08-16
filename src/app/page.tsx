@@ -31,15 +31,17 @@ interface HomePageData {
     afterImageUrl: string;
 }
 
-const localBusinessSchema = {
+const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "Organization",
     "name": "SofaClean Pro",
-    "image": "https://placehold.co/1200x630.png",
-    "@id": "",
     "url": "https://your-website-url.com",
-    "telephone": "081-234-5678",
-    "priceRange": "฿฿",
+    "logo": "https://your-website-url.com/logo.png",
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+66-81-234-5678",
+        "contactType": "Customer Service"
+    },
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "123 Sukhumvit Road",
@@ -48,12 +50,6 @@ const localBusinessSchema = {
       "addressCountry": "TH"
     },
     "description": "บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ซักม่าน และที่นอนครบวงจร พร้อมบริการถึงบ้านและคอนโดในเขตกรุงเทพและปริมณฑล",
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ],
-      "opens": "09:00",
-      "closes": "18:00"
-    },
     "sameAs": [ "https://www.facebook.com/your-page", "https://line.me/ti/p/~yourlineid" ]
 };
 
@@ -103,14 +99,14 @@ export default async function Home() {
 
   return (
     <>
-      <JsonLD data={localBusinessSchema} />
+      <JsonLD data={organizationSchema} />
       <JsonLD data={faqPageSchema} />
       
       <div className="bg-background">
         <header 
           className="text-white shadow-lg relative bg-cover bg-center bg-fixed" 
           style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${homePageData.heroImageUrl}')` }}
-          data-ai-hint="sofa furniture"
+          data-ai-hint="living room sofa"
         >
           <div className="container mx-auto px-6 py-20 md:py-32 text-center">
             <Reveal>

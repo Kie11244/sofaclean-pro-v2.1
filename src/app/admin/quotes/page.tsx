@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -19,11 +20,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { subDays, startOfDay } from 'date-fns';
 
 export interface Quote {
     id: string;
@@ -45,6 +47,8 @@ const statusMap: Record<Quote['status'], { text: string; className: string }> = 
 
 export default function QuotesListPage() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [dateFilter, setDateFilter] = useState('7'); // Default to last 7 days
     const [loading, setLoading] = useState(true);
     const [galleryImages, setGalleryImages] = useState<string[]>([]);
     const [galleryIndex, setGalleryIndex] = useState(0);
@@ -73,6 +77,19 @@ export default function QuotesListPage() {
     useEffect(() => {
         fetchQuotes();
     }, []);
+
+    const filteredQuotes = useMemo(() => {
+        let dateThreshold: Date | null = null;
+        if (dateFilter !== 'all') {
+            dateThreshold = startOfDay(subDays(new Date(), parseInt(dateFilter)));
+        }
+
+        return quotes.filter(quote => {
+            const statusMatch = statusFilter === 'all' || quote.status === statusFilter;
+            const dateMatch = !dateThreshold || quote.createdAt.toDate() >= dateThreshold;
+            return statusMatch && dateMatch;
+        });
+    }, [quotes, statusFilter, dateFilter]);
 
     const handleDelete = async (id: string) => {
         try {
@@ -118,10 +135,6 @@ export default function QuotesListPage() {
         setGalleryIndex(index);
         setIsGalleryOpen(true);
     };
-
-    const closeGallery = () => {
-        setIsGalleryOpen(false);
-    };
     
     const nextImage = () => {
         setGalleryIndex((prevIndex) => (prevIndex + 1) % galleryImages.length);
@@ -130,7 +143,6 @@ export default function QuotesListPage() {
     const prevImage = () => {
         setGalleryIndex((prevIndex) => (prevIndex - 1 + galleryImages.length) % galleryImages.length);
     };
-
 
     const formatDate = (timestamp: Timestamp) => {
         if (!timestamp) return "ไม่มีข้อมูลวันที่";
@@ -147,17 +159,45 @@ export default function QuotesListPage() {
                 <div className="max-w-6xl mx-auto">
                     <Card>
                         <CardHeader>
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                 <div>
                                     <CardTitle>รายการใบเสนอราคา</CardTitle>
                                     <CardDescription>จัดการคำขอใบเสนอราคาจากลูกค้า</CardDescription>
                                 </div>
-                                <Button variant="outline" asChild>
-                                    <Link href="/admin/dashboard">
-                                        <ArrowLeft className="mr-2 h-4 w-4" />
-                                        กลับไปหน้า Dashboard
-                                    </Link>
-                                </Button>
+                                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                                     <div className="flex items-center gap-2 w-full md:w-auto">
+                                        <Filter className="h-5 w-5 text-muted-foreground" />
+                                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                            <SelectTrigger className="w-full md:w-[150px]">
+                                                <SelectValue placeholder="กรองตามสถานะ" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">สถานะทั้งหมด</SelectItem>
+                                                <SelectItem value="new">ใหม่</SelectItem>
+                                                <SelectItem value="contacted">ติดต่อแล้ว</SelectItem>
+                                                <SelectItem value="completed">สำเร็จ</SelectItem>
+                                                <SelectItem value="cancelled">ยกเลิก</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Select value={dateFilter} onValueChange={setDateFilter}>
+                                            <SelectTrigger className="w-full md:w-[150px]">
+                                                <SelectValue placeholder="กรองตามวันที่" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">ทั้งหมด</SelectItem>
+                                                <SelectItem value="1">วันนี้</SelectItem>
+                                                <SelectItem value="7">7 วันล่าสุด</SelectItem>
+                                                <SelectItem value="30">30 วันล่าสุด</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button variant="outline" asChild className="w-full md:w-auto">
+                                        <Link href="/admin/dashboard">
+                                            <ArrowLeft className="mr-2 h-4 w-4" />
+                                            Dashboard
+                                        </Link>
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -166,13 +206,13 @@ export default function QuotesListPage() {
                                     <Loader2 className="mr-2 h-8 w-8 animate-spin" />
                                     <span>กำลังโหลดข้อมูล...</span>
                                 </div>
-                            ) : quotes.length === 0 ? (
+                            ) : filteredQuotes.length === 0 ? (
                                 <div className="text-center py-10">
-                                    <p className="text-muted-foreground">ยังไม่มีใบเสนอราคาเข้ามา</p>
+                                    <p className="text-muted-foreground">ไม่พบใบเสนอราคาตามเงื่อนไขที่เลือก</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {quotes.map((quote) => (
+                                    {filteredQuotes.map((quote) => (
                                         <Card key={quote.id} className="overflow-hidden">
                                             <CardHeader className="bg-gray-100/80 p-4">
                                                  <div className="flex flex-wrap justify-between items-center gap-4">
