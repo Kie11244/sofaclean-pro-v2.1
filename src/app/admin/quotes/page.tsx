@@ -18,8 +18,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Loader2, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +46,9 @@ const statusMap: Record<Quote['status'], { text: string; className: string }> = 
 export default function QuotesListPage() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [galleryImages, setGalleryImages] = useState<string[]>([]);
+    const [galleryIndex, setGalleryIndex] = useState(0);
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
     const { toast } = useToast();
 
     const fetchQuotes = async () => {
@@ -110,6 +112,25 @@ export default function QuotesListPage() {
             });
         }
     };
+    
+    const openGallery = (images: string[], index: number) => {
+        setGalleryImages(images);
+        setGalleryIndex(index);
+        setIsGalleryOpen(true);
+    };
+
+    const closeGallery = () => {
+        setIsGalleryOpen(false);
+    };
+    
+    const nextImage = () => {
+        setGalleryIndex((prevIndex) => (prevIndex + 1) % galleryImages.length);
+    };
+
+    const prevImage = () => {
+        setGalleryIndex((prevIndex) => (prevIndex - 1 + galleryImages.length) % galleryImages.length);
+    };
+
 
     const formatDate = (timestamp: Timestamp) => {
         if (!timestamp) return "ไม่มีข้อมูลวันที่";
@@ -154,7 +175,7 @@ export default function QuotesListPage() {
                                     {quotes.map((quote) => (
                                         <Card key={quote.id} className="overflow-hidden">
                                             <CardHeader className="bg-gray-100/80 p-4">
-                                                <div className="flex flex-wrap justify-between items-center gap-4">
+                                                 <div className="flex flex-wrap justify-between items-center gap-4">
                                                     <div>
                                                         <CardTitle className="text-lg">คุณ {quote.name}</CardTitle>
                                                         <CardDescription>
@@ -215,7 +236,7 @@ export default function QuotesListPage() {
                                                     {quote.images && quote.images.length > 0 ? (
                                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                                             {quote.images.map((imgSrc, index) => (
-                                                                <button key={index} onClick={() => setSelectedImage(imgSrc)} className="focus:outline-none">
+                                                                <button key={index} onClick={() => openGallery(quote.images, index)} className="focus:outline-none">
                                                                     <Image
                                                                         src={imgSrc}
                                                                         alt={`รูปแนบ ${index + 1}`}
@@ -240,21 +261,48 @@ export default function QuotesListPage() {
                 </div>
             </div>
 
-            <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
-                <DialogContent className="max-w-3xl p-2 bg-transparent border-0 shadow-none">
-                    {selectedImage && (
-                        <Image
-                            src={selectedImage}
-                            alt="รูปภาพขนาดใหญ่"
-                            width={1200}
-                            height={800}
-                            className="rounded-md object-contain max-h-[90vh] w-full"
-                        />
+             <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+                <DialogContent className="max-w-4xl p-2 bg-transparent border-0 shadow-none flex flex-col items-center justify-center">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>รูปภาพขนาดใหญ่</DialogTitle>
+                        <DialogDescription>แสดงรูปภาพที่ลูกค้าแนบมาในใบเสนอราคา</DialogDescription>
+                    </DialogHeader>
+                    {galleryImages.length > 0 && (
+                        <div className="relative w-full h-full">
+                             <Image
+                                src={galleryImages[galleryIndex]}
+                                alt={`รูปภาพขนาดใหญ่ ${galleryIndex + 1}`}
+                                width={1200}
+                                height={800}
+                                className="rounded-md object-contain max-h-[85vh] w-full"
+                            />
+                            {galleryImages.length > 1 && (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 bg-black/50 hover:bg-black/70 border-none text-white"
+                                        onClick={prevImage}
+                                    >
+                                        <ChevronLeft className="h-6 w-6" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 bg-black/50 hover:bg-black/70 border-none text-white"
+                                        onClick={nextImage}
+                                    >
+                                        <ChevronRight className="h-6 w-6" />
+                                    </Button>
+                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm rounded-full px-3 py-1">
+                                        {galleryIndex + 1} / {galleryImages.length}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     )}
                 </DialogContent>
             </Dialog>
         </>
     );
 }
-
-    
