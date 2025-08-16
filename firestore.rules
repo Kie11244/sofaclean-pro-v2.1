@@ -1,25 +1,33 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Allow public read access for blog posts and page content,
-    // but restrict write access to authenticated admins.
+  
+    // Posts: Allow everyone to read, but only authenticated users (admins) to write.
+    // This is necessary for the blog and blog post pages to be public.
     match /posts/{postId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
-
+    
+    // Pages: Allow everyone to read the home page configuration (images, etc.).
+    // Only authenticated users (admins) can change these settings.
     match /pages/{pageId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+       allow read: if true;
+       allow write: if request.auth != null;
     }
 
-    // Allow anyone to create a quote (submit the form),
-    // but only authenticated admins can read, update, or delete them.
+    // Quotes: Allow anyone to create (submit) a quote request.
+    // Only authenticated users (admins) can read, update, or delete them.
     match /quotes/{quoteId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
+    }
+
+    // Users: Disallow any client-side access to user data for security.
+    match /users/{userId} {
+      allow read, write: if false;
     }
   }
 }
