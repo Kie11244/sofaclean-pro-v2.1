@@ -73,13 +73,13 @@ export default function NewBlogPostPage() {
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newTitle = e.target.value;
         setTitle(newTitle);
-        // Auto-generate slug from title
-        const newSlug = newTitle.toString().toLowerCase()
+        // Auto-generate slug from title for Thai language
+        const newSlug = newTitle.toString()
+            .toLowerCase()
+            .trim()
             .replace(/\s+/g, '-')           // Replace spaces with -
-            .replace(/[^\u0E00-\u0E7F\w\-]+/g, '') // Allow Thai characters
+            .replace(/[^\u0E00-\u0E7Fa-z0-9-]/g, '') // Remove special chars but keep Thai, a-z, 0-9, and -
             .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-            .replace(/^-+/, '')             // Trim - from start of text
-            .replace(/-+$/, '');            // Trim - from end of text
         setSlug(newSlug);
     }
 
@@ -99,7 +99,7 @@ export default function NewBlogPostPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="slug">Slug (สำหรับ URL) *</Label>
-                                <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="example-slug-for-url" required/>
+                                <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="จะถูกสร้างอัตโนมัติจากหัวข้อเรื่อง" required/>
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="category">หมวดหมู่ *</Label>
@@ -172,3 +172,4 @@ export default function NewBlogPostPage() {
         </div>
     );
 }
+    

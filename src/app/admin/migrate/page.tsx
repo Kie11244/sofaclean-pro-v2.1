@@ -12,7 +12,6 @@ import Link from 'next/link';
 
 const oldBlogData = [
     {
-        id: "how-to-clean-sofa",
         slug: "วิธีซักโซฟาผ้าด้วยตัวเองเบื้องต้น",
         image: "https://placehold.co/800x400.png",
         imageHint: "woman cleaning sofa",
@@ -25,7 +24,6 @@ const oldBlogData = [
         metaDescription: "เรียนรู้วิธีซักโซฟาผ้าด้วยตัวเองง่ายๆ ด้วยอุปกรณ์ในบ้าน กำจัดคราบสกปรกและคืนความใหม่ให้โซฟาของคุณ อ่านเคล็ดลับทั้งหมดที่นี่"
     },
     {
-        id: "when-to-clean-car-seats",
         slug: "5-สัญญาณเตือนถึงเวลาซักเบาะรถยนต์",
         image: "https://placehold.co/800x400.png",
         imageHint: "car seat interior",
@@ -38,7 +36,6 @@ const oldBlogData = [
         metaDescription: "รถมีกลิ่นอับ? เบาะมีคราบสกปรก? เช็ค 5 สัญญาณเตือนที่บอกว่าถึงเวลาซักเบาะรถยนต์แล้ว เพื่อสุขอนามัยที่ดีและรถที่น่าใช้งานยิ่งขึ้น"
     },
     {
-        id: "sofa-vs-carpet-cleaning",
         slug: "ซักโซฟา-กับ-ซักพรม-ต่างกันอย่างไร",
         image: "https://placehold.co/800x400.png",
         imageHint: "sofa carpet",
@@ -78,9 +75,7 @@ export default function MigratePage() {
             }
 
             for (const post of oldBlogData) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { id, ...postData } = post; // exclude original id
-                await addDoc(postsCollection, postData);
+                await addDoc(postsCollection, post);
             }
             
             toast({
@@ -153,3 +148,4 @@ export default function MigratePage() {
 
     
 
+    
