@@ -109,7 +109,7 @@ export default function NewBlogPostPage() {
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="image">URL รูปภาพหลัก</Label>
-                                <Input id="image" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://example.com/image.png" />
+                                <Input id="image" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://placehold.co/800x400.png" />
                                 <p className="text-sm text-muted-foreground">หากเว้นว่างไว้ จะใช้รูปภาพ placeholder</p>
                             </div>
                              <div className="space-y-2">

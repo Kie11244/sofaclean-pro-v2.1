@@ -28,7 +28,7 @@ const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "SofaClean Pro",
-    "image": "https://placehold.co/2070x1380.png",
+    "image": "https://placehold.co/1200x630.png",
     "@id": "",
     "url": "https://your-website-url.com",
     "telephone": "081-234-5678",
@@ -82,7 +82,7 @@ export default async function Home() {
       <JsonLD data={faqPageSchema} />
       
       <div className="bg-background">
-        <header className="hero-section text-white shadow-lg relative" data-ai-hint="sofa living room">
+        <header className="hero-section text-white shadow-lg relative" data-ai-hint="sofa furniture">
           <div className="container mx-auto px-6 py-20 md:py-32 text-center">
             <Reveal>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">{dict.hero.title}</h1>

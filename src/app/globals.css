@@ -76,7 +76,7 @@
     scroll-behavior: smooth;
   }
   .hero-section {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://placehold.co/2070x1380.png');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://placehold.co/1920x1080.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
