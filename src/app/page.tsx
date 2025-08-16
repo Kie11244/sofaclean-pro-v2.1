@@ -182,7 +182,7 @@ export default async function Home() {
              {blogPosts.length > 0 ? (
                 <div className="grid md:grid-cols-3 gap-8">
                 {blogPosts.map((post, index) => {
-                    const postUrl = `/blog/${post.slug}`;
+                    const postUrl = `/blog/${encodeURIComponent(post.slug)}`;
                     return (
                     <Reveal key={post.id} delay={`${index * 200}ms`}>
                     <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">

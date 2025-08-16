@@ -51,7 +51,7 @@ export default async function BlogIndexPage() {
             {posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.map((post, index) => {
-                        const postUrl = `/blog/${post.slug}`;
+                        const postUrl = `/blog/${encodeURIComponent(post.slug)}`;
                         return (
                         <Reveal key={post.id} delay={`${index * 100}ms`}>
                             <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">

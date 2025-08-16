@@ -33,9 +33,10 @@ async function getPosts(): Promise<Post[]> {
     return postList;
 }
 
-// Fetch a single post by slug
+// Fetch a single post by slug, ensuring the slug is decoded
 async function getPost(slug: string): Promise<Post | null> {
-    const q = query(collection(db, "posts"), where("slug", "==", slug));
+    const decodedSlug = decodeURIComponent(slug);
+    const q = query(collection(db, "posts"), where("slug", "==", decodedSlug));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         return null;
@@ -53,7 +54,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const post = await getPost(decodeURIComponent(params.slug));
+    const post = await getPost(params.slug); // getPost handles decoding
     if (!post) {
         return {};
     }
@@ -67,7 +68,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(decodeURIComponent(params.slug));
+  const post = await getPost(params.slug); // getPost handles decoding
 
   if (!post) {
     notFound();
@@ -81,7 +82,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     "@type": "Article",
     "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://your-website-url.com/blog/${post.slug}`
+        "@id": `https://your-website-url.com/blog/${encodeURIComponent(post.slug)}`
     },
     "headline": post.title,
     "description": post.description,
@@ -154,7 +155,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                     <h3 className="text-xl font-bold mb-4">{dict.blogPost.related.title}</h3>
                     <div className="space-y-4">
                         {relatedPosts.map(related => {
-                            const relatedUrl = `/blog/${related.slug}`;
+                            const relatedUrl = `/blog/${encodeURIComponent(related.slug)}`;
                             return (
                              <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
                                 <Link href={relatedUrl} className="block">
