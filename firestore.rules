@@ -1,33 +1,28 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // กฎสำหรับคอลเลกชัน "posts" (บทความ)
+
+    // Rules for posts
+    // Allow public read and list for everyone.
+    // Allow write only for authenticated admin users.
     match /posts/{postId} {
-      // อนุญาตให้ทุกคนอ่านและแสดงรายการบทความได้ (สำคัญสำหรับหน้าแรกและหน้าบล็อก)
       allow read, list: if true;
-      
-      // เฉพาะผู้ใช้ที่ล็อกอินแล้ว (แอดมิน) เท่านั้นที่สามารถเขียน, อัปเดต, หรือลบข้อมูลได้
-      allow write, update, delete: if request.auth != null;
+      allow write: if request.auth != null;
     }
 
-    // กฎสำหรับคอลเลกชัน "quotes" (ใบเสนอราคา)
+    // Rules for quotes
+    // Allow anyone to create a quote.
+    // Allow only authenticated admin users to read, update, delete, and list quotes.
     match /quotes/{quoteId} {
-      // อนุญาตให้ทุกคนสามารถสร้าง (ส่ง) ใบเสนอราคาได้
       allow create: if true;
-      
-      // เฉพาะผู้ใช้ที่ล็อกอินแล้ว (แอดมิน) เท่านั้นที่สามารถอ่าน, อัปเดต, หรือลบได้
       allow read, update, delete, list: if request.auth != null;
     }
 
-    // กฎสำหรับคอลเลกชัน "pages" (ข้อมูลหน้าเว็บ เช่น รูปภาพปก)
+    // Rules for pages (site content like homepage images)
+    // Allow public read for everyone.
+    // Allow write only for authenticated admin users.
     match /pages/{pageId} {
-      // อนุญาตให้ทุกคนสามารถอ่านข้อมูลสำหรับแสดงผลหน้าเว็บได้
-      allow read, list: if true;
-      
-      // เฉพาะผู้ใช้ที่ล็อกอินแล้ว (แอดมิน) เท่านั้นที่สามารถเขียนข้อมูลได้
+      allow read: if true;
       allow write: if request.auth != null;
     }
   }
