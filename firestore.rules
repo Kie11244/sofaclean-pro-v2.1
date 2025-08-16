@@ -3,23 +3,27 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Allow public read access to blog posts and page content
+    
+    // Allow public read access to posts and pages, but restrict writes to authenticated admins
     match /posts/{postId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
-
+    
     match /pages/{pageId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // Allow anyone to submit a quote (create)
-    // Only authenticated users (admins) can view, update, or delete quotes
+    // Allow anyone to create a quote, but only admins can read, update, or delete them
     match /quotes/{quoteId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
