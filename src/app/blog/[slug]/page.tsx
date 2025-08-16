@@ -47,7 +47,8 @@ async function getPost(slug: string): Promise<Post | null> {
 export async function generateStaticParams() {
   const posts = await getPosts();
   return posts.map(post => ({
-    slug: post.slug,
+    // We must encode the slug for it to work correctly with non-ASCII characters
+    slug: encodeURIComponent(post.slug),
   }));
 }
 
