@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, ChangeEvent } from 'react';
@@ -19,9 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadImageAction } from '@/app/actions/upload-action';
+
 
 interface EstimateDialogProps {
     children: React.ReactNode;
@@ -138,19 +138,22 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         }
 
         setIsSubmitting(true);
-        let uploadedImageUrls: string[] = [];
-
+        
         try {
-            // 1. Upload images if any, directly from the client
+            let uploadedImageUrls: string[] = [];
+
             if (images.length > 0) {
-                const uploadPromises = images.map(imageFile => {
-                    const safeFileName = `quote_images/${Date.now()}_${imageFile.file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
-                    const storageRef = ref(storage, safeFileName);
-                    return uploadBytes(storageRef, imageFile.file).then(snapshot => 
-                        getDownloadURL(snapshot.ref)
-                    );
+                const formData = new FormData();
+                images.forEach((imageFile) => {
+                    formData.append('images', imageFile.file);
                 });
-                uploadedImageUrls = await Promise.all(uploadPromises);
+
+                const uploadResult = await uploadImageAction(formData);
+                
+                if (!uploadResult.success || !uploadResult.urls) {
+                     throw new Error(uploadResult.error || "Image upload failed");
+                }
+                uploadedImageUrls = uploadResult.urls;
             }
 
             // 2. Save quote data to Firestore
@@ -175,8 +178,8 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
              console.error("Error submitting quote:", error);
              toast({
                 variant: "destructive",
-                title: "เกิดข้อผิดพลาด",
-                description: "ไม่สามารถส่งข้อมูลได้ กรุณาตรวจสอบ Console หรือลองใหม่อีกครั้ง",
+                title: "เกิดข้อผิดพลาดในการส่งข้อมูล",
+                description: error.message || "ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
             });
         } finally {
             setIsSubmitting(false);
