@@ -76,7 +76,7 @@ export default function NewBlogPostPage() {
         // Auto-generate slug from title
         const newSlug = newTitle.toString().toLowerCase()
             .replace(/\s+/g, '-')           // Replace spaces with -
-            .replace(/[^\u0E00-\u0E7F\w\-]+/g, '') // Remove all non-word chars except Thai
+            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
             .replace(/\-\-+/g, '-')         // Replace multiple - with single -
             .replace(/^-+/, '')             // Trim - from start of text
             .replace(/-+$/, '');            // Trim - from end of text
