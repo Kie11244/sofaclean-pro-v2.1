@@ -4,24 +4,30 @@ import { getStorage } from 'firebase-admin/storage';
 import { Readable } from 'stream';
 import { projectId } from '@/lib/firebase-config'; // Use a separate config for admin
 
-// Initialize Firebase Admin SDK
-if (admin.apps.length === 0) {
-  try {
-    admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
-          storageBucket: `${projectId}.appspot.com`,
-          projectId: projectId,
-    });
-    console.log("Firebase Admin SDK initialized successfully.");
-  } catch (error: any) {
-    console.error("Firebase Admin SDK initialization error:", error.message);
-    // We will return an error in the POST handler if initialization fails
+// Function to initialize Firebase Admin SDK if not already initialized
+function initializeFirebaseAdmin() {
+  if (admin.apps.length === 0) {
+    try {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+        storageBucket: `${projectId}.appspot.com`,
+        projectId: projectId,
+      });
+      console.log("Firebase Admin SDK initialized successfully.");
+    } catch (error: any) {
+      console.error("Firebase Admin SDK initialization error:", error.message);
+      // Throw an error to be caught by the handler
+      throw new Error(`Firebase admin initialization failed: ${error.message}`);
+    }
   }
 }
 
 export async function POST(request: Request) {
-    if (admin.apps.length === 0) {
-        return NextResponse.json({ success: false, error: "Firebase Admin not initialized." }, { status: 500 });
+    try {
+        initializeFirebaseAdmin();
+    } catch (initError: any) {
+        console.error('Initialization failed in POST handler:', initError.message);
+        return NextResponse.json({ success: false, error: initError.message }, { status: 500 });
     }
 
     try {
