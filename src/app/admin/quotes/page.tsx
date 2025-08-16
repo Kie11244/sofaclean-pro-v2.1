@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
 export interface Quote {
@@ -34,6 +35,7 @@ export interface Quote {
 export default function QuotesListPage() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const { toast } = useToast();
 
     const fetchQuotes = async () => {
@@ -87,90 +89,106 @@ export default function QuotesListPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-6xl mx-auto">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>รายการใบเสนอราคา</CardTitle>
-                        <CardDescription>จัดการคำขอใบเสนอราคาจากลูกค้า</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <div className="flex justify-center items-center py-10">
-                                <Loader2 className="mr-2 h-8 w-8 animate-spin" />
-                                <span>กำลังโหลดข้อมูล...</span>
-                            </div>
-                        ) : quotes.length === 0 ? (
-                            <div className="text-center py-10">
-                                <p className="text-muted-foreground">ยังไม่มีใบเสนอราคาเข้ามา</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-6">
-                                {quotes.map((quote) => (
-                                    <Card key={quote.id} className="overflow-hidden">
-                                        <CardHeader className="bg-gray-100/80">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <CardTitle className="text-lg">คุณ {quote.name}</CardTitle>
-                                                    <CardDescription>
-                                                        ส่งเมื่อ: {formatDate(quote.createdAt)}
-                                                    </CardDescription>
-                                                </div>
-                                                 <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                         <Button variant="destructive" size="sm">ลบ</Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <h4 className="font-semibold mb-2">ข้อมูลติดต่อ</h4>
-                                                <p><strong className="font-medium">เบอร์โทร:</strong> {quote.phone}</p>
-                                                <p><strong className="font-medium">ที่อยู่:</strong> {quote.address || "ไม่ได้ระบุ"}</p>
-                                                <h4 className="font-semibold mt-4 mb-2">รายละเอียดงาน</h4>
-                                                <p className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md">{quote.description}</p>
-                                            </div>
-                                            <div>
-                                                 <h4 className="font-semibold mb-2">รูปภาพที่แนบมา</h4>
-                                                 {quote.images && quote.images.length > 0 ? (
-                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                        {quote.images.map((imgSrc, index) => (
-                                                            <a key={index} href={imgSrc} target="_blank" rel="noopener noreferrer">
-                                                                <Image
-                                                                    src={imgSrc}
-                                                                    alt={`รูปแนบ ${index + 1}`}
-                                                                    width={200}
-                                                                    height={200}
-                                                                    className="rounded-md object-cover aspect-square hover:opacity-80 transition-opacity"
-                                                                />
-                                                            </a>
-                                                        ))}
+        <>
+            <div className="min-h-screen bg-gray-50 p-8">
+                <div className="max-w-6xl mx-auto">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>รายการใบเสนอราคา</CardTitle>
+                            <CardDescription>จัดการคำขอใบเสนอราคาจากลูกค้า</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {loading ? (
+                                <div className="flex justify-center items-center py-10">
+                                    <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+                                    <span>กำลังโหลดข้อมูล...</span>
+                                </div>
+                            ) : quotes.length === 0 ? (
+                                <div className="text-center py-10">
+                                    <p className="text-muted-foreground">ยังไม่มีใบเสนอราคาเข้ามา</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {quotes.map((quote) => (
+                                        <Card key={quote.id} className="overflow-hidden">
+                                            <CardHeader className="bg-gray-100/80">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <CardTitle className="text-lg">คุณ {quote.name}</CardTitle>
+                                                        <CardDescription>
+                                                            ส่งเมื่อ: {formatDate(quote.createdAt)}
+                                                        </CardDescription>
                                                     </div>
-                                                 ) : (
-                                                    <p className="text-muted-foreground text-sm">ไม่มีรูปภาพแนบ</p>
-                                                 )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="sm">ลบ</Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <h4 className="font-semibold mb-2">ข้อมูลติดต่อ</h4>
+                                                    <p><strong className="font-medium">เบอร์โทร:</strong> {quote.phone}</p>
+                                                    <p><strong className="font-medium">ที่อยู่:</strong> {quote.address || "ไม่ได้ระบุ"}</p>
+                                                    <h4 className="font-semibold mt-4 mb-2">รายละเอียดงาน</h4>
+                                                    <p className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md">{quote.description}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold mb-2">รูปภาพที่แนบมา</h4>
+                                                    {quote.images && quote.images.length > 0 ? (
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                            {quote.images.map((imgSrc, index) => (
+                                                                <button key={index} onClick={() => setSelectedImage(imgSrc)} className="focus:outline-none">
+                                                                    <Image
+                                                                        src={imgSrc}
+                                                                        alt={`รูปแนบ ${index + 1}`}
+                                                                        width={200}
+                                                                        height={200}
+                                                                        className="rounded-md object-cover aspect-square hover:opacity-80 transition-opacity cursor-pointer"
+                                                                    />
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-muted-foreground text-sm">ไม่มีรูปภาพแนบ</p>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-        </div>
+
+            <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+                <DialogContent className="max-w-3xl p-2 bg-transparent border-0 shadow-none">
+                    {selectedImage && (
+                        <Image
+                            src={selectedImage}
+                            alt="รูปภาพขนาดใหญ่"
+                            width={1200}
+                            height={800}
+                            className="rounded-md object-contain max-h-[90vh] w-full"
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
