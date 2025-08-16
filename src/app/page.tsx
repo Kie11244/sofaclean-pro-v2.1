@@ -1,9 +1,10 @@
 
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, limit, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, DocumentData, doc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +23,12 @@ interface Post extends DocumentData {
     date: string;
     category: string;
     description: string;
+}
+
+interface HomePageData {
+    heroImageUrl: string;
+    beforeImageUrl: string;
+    afterImageUrl: string;
 }
 
 const localBusinessSchema = {
@@ -57,8 +64,26 @@ async function getRecentPosts(): Promise<Post[]> {
     return postList;
 }
 
+async function getHomePageData(): Promise<HomePageData> {
+    const docRef = doc(db, "pages", "home");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return docSnap.data() as HomePageData;
+    } else {
+        // Return default data if document doesn't exist
+        return {
+            heroImageUrl: "https://placehold.co/1920x1080.png",
+            beforeImageUrl: "https://placehold.co/600x400.png",
+            afterImageUrl: "https://placehold.co/600x400.png"
+        };
+    }
+}
+
+
 export default async function Home() {
   const blogPosts = await getRecentPosts();
+  const homePageData = await getHomePageData();
   
   const faqData = dict.faqData;
   const whyUsData = dict.whyUsData;
@@ -82,7 +107,11 @@ export default async function Home() {
       <JsonLD data={faqPageSchema} />
       
       <div className="bg-background">
-        <header className="hero-section text-white shadow-lg relative" data-ai-hint="sofa furniture">
+        <header 
+          className="text-white shadow-lg relative bg-cover bg-center bg-fixed" 
+          style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${homePageData.heroImageUrl}')` }}
+          data-ai-hint="sofa furniture"
+        >
           <div className="container mx-auto px-6 py-20 md:py-32 text-center">
             <Reveal>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">{dict.hero.title}</h1>
@@ -131,7 +160,7 @@ export default async function Home() {
             <div className="grid md:grid-cols-2 gap-4 md:gap-8">
               <Reveal>
                 <Card className="rounded-lg shadow-lg overflow-hidden">
-                  <Image src="https://placehold.co/600x400.png" alt={dict.beforeAfter.before.alt} width={600} height={400} className="w-full h-80 object-cover" data-ai-hint="dirty sofa"/>
+                  <Image src={homePageData.beforeImageUrl} alt={dict.beforeAfter.before.alt} width={600} height={400} className="w-full h-80 object-cover" data-ai-hint="dirty sofa"/>
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-red-600 text-center">{dict.beforeAfter.before.label}</h3>
                     <p className="text-gray-600 text-center mt-2">{dict.beforeAfter.before.desc}</p>
@@ -140,7 +169,7 @@ export default async function Home() {
               </Reveal>
               <Reveal delay="200ms">
                 <Card className="rounded-lg shadow-lg overflow-hidden">
-                  <Image src="https://placehold.co/600x400.png" alt={dict.beforeAfter.after.alt} width={600} height={400} className="w-full h-80 object-cover" data-ai-hint="clean sofa"/>
+                  <Image src={homePageData.afterImageUrl} alt={dict.beforeAfter.after.alt} width={600} height={400} className="w-full h-80 object-cover" data-ai-hint="clean sofa"/>
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-green-600 text-center">{dict.beforeAfter.after.label}</h3>
                     <p className="text-gray-600 text-center mt-2">{dict.beforeAfter.after.desc}</p>
