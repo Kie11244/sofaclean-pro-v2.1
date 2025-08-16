@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -5,9 +6,9 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, Timestamp, query, where } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Newspaper, Loader2, ArrowLeft } from 'lucide-react';
 import { subDays, format, startOfDay } from 'date-fns';
-import { th } from 'date-fns/locale';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -30,53 +31,66 @@ export default function AnalyticsPage() {
     const [postCount, setPostCount] = useState(0);
     const [chartData, setChartData] = useState<ChartData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [timeRange, setTimeRange] = useState('7'); // Default to 7 days
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                // Fetch total quotes and posts
+        const fetchStaticData = async () => {
+             try {
+                // Fetch total quotes and posts (only once)
                 const quotesSnapshot = await getDocs(collection(db, 'quotes'));
                 const postsSnapshot = await getDocs(collection(db, 'posts'));
                 setQuoteCount(quotesSnapshot.size);
                 setPostCount(postsSnapshot.size);
-
-                // Fetch quotes for the last 7 days
-                const last7Days = startOfDay(subDays(new Date(), 6));
-                const q = query(collection(db, 'quotes'), where('createdAt', '>=', last7Days));
+            } catch (error) {
+                console.error("Error fetching static analytics data: ", error);
+            }
+        };
+        fetchStaticData();
+    }, []);
+    
+    useEffect(() => {
+        const fetchChartData = async () => {
+            setLoading(true);
+            try {
+                const days = parseInt(timeRange);
+                const startDate = startOfDay(subDays(new Date(), days - 1));
+                
+                const q = query(collection(db, 'quotes'), where('createdAt', '>=', startDate));
                 const recentQuotesSnapshot = await getDocs(q);
                 const recentQuotes = recentQuotesSnapshot.docs.map(doc => doc.data() as { createdAt: Timestamp });
 
                 // Process data for the chart
                 const data: ChartData[] = [];
-                for (let i = 6; i >= 0; i--) {
+                for (let i = days - 1; i >= 0; i--) {
                     const date = subDays(new Date(), i);
                     data.push({
-                        name: format(date, 'd MMM', { locale: th }),
+                        name: format(date, 'dd/MM'),
                         quotes: 0,
                     });
                 }
                 
                 recentQuotes.forEach(quote => {
-                    const dateStr = format(quote.createdAt.toDate(), 'd MMM', { locale: th });
-                    const dayData = data.find(d => d.name === dateStr);
-                    if (dayData) {
-                        dayData.quotes += 1;
+                    if (quote.createdAt) {
+                        const dateStr = format(quote.createdAt.toDate(), 'dd/MM');
+                        const dayData = data.find(d => d.name === dateStr);
+                        if (dayData) {
+                            dayData.quotes += 1;
+                        }
                     }
                 });
 
                 setChartData(data);
             } catch (error) {
-                console.error("Error fetching analytics data: ", error);
+                console.error("Error fetching chart data: ", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
-    }, []);
+        fetchChartData();
+    }, [timeRange]);
 
-    if (loading) {
+    if (loading && chartData.length === 0) { // Show initial loading screen
         return (
              <div className="flex justify-center items-center h-screen">
                  <Loader2 className="mr-2 h-16 w-16 animate-spin" />
@@ -126,10 +140,29 @@ export default function AnalyticsPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>ใบเสนอราคาใน 7 วันล่าสุด</CardTitle>
-                        <CardDescription>กราฟแสดงจำนวนใบเสนอราคาที่ส่งเข้ามาในแต่ละวัน</CardDescription>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <CardTitle>สรุปใบเสนอราคา</CardTitle>
+                                <CardDescription>กราฟแสดงจำนวนใบเสนอราคาที่ส่งเข้ามาในแต่ละวัน</CardDescription>
+                            </div>
+                            <Select value={timeRange} onValueChange={setTimeRange}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="เลือกระยะเวลา" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="7">7 วันล่าสุด</SelectItem>
+                                    <SelectItem value="30">30 วันล่าสุด</SelectItem>
+                                    <SelectItem value="90">90 วันล่าสุด</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="relative">
+                         {loading && (
+                            <div className="absolute inset-0 bg-white/70 flex justify-center items-center z-10 rounded-b-lg">
+                                <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+                            </div>
+                        )}
                         <ResponsiveContainer width="100%" height={350}>
                             <BarChart data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" />
