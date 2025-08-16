@@ -23,7 +23,7 @@ interface Post extends DocumentData {
     description: string;
 }
 
-// This tells Next.js to re-fetch the data on every request
+// This tells Next.js to re-fetch the data on every request, ensuring new posts appear.
 export const dynamic = 'force-dynamic';
 
 async function getPosts(): Promise<Post[]> {

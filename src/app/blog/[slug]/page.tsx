@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, query, where, DocumentData, orderBy, limit } from 'firebase/firestore';
 
 import { JsonLD } from '@/components/json-ld';
 import { Button } from '@/components/ui/button';
@@ -25,18 +25,10 @@ interface Post extends DocumentData {
     metaDescription?: string;
 }
 
-// Fetch all posts from Firestore
-async function getPosts(): Promise<Post[]> {
-    const postsCol = collection(db, 'posts');
-    const postSnapshot = await getDocs(postsCol);
-    const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
-    return postList;
-}
-
-// Fetch a single post by slug, ensuring the slug is decoded
+// Fetch a single post by slug
 async function getPost(slug: string): Promise<Post | null> {
-    const decodedSlug = decodeURIComponent(slug);
-    const q = query(collection(db, "posts"), where("slug", "==", decodedSlug));
+    // The slug from params is already decoded by Next.js in dynamic rendering
+    const q = query(collection(db, "posts"), where("slug", "==", slug));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         return null;
@@ -45,16 +37,22 @@ async function getPost(slug: string): Promise<Post | null> {
     return { id: doc.id, ...doc.data() } as Post;
 }
 
-export async function generateStaticParams() {
-  const posts = await getPosts();
-  return posts.map(post => ({
-    // We must encode the slug for it to work correctly with non-ASCII characters
-    slug: encodeURIComponent(post.slug),
-  }));
+async function getRelatedPosts(currentPostId: string): Promise<Post[]> {
+    const q = query(
+        collection(db, "posts"),
+        orderBy("date", "desc"),
+        limit(5) // Fetch a few more to filter out the current one
+    );
+    const snapshot = await getDocs(q);
+    const allRecentPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+    // Filter out the current post and take the next 2
+    return allRecentPosts.filter(p => p.id !== currentPostId).slice(0, 2);
 }
 
+
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const post = await getPost(params.slug); // getPost handles decoding
+    // We need to decode it here for metadata generation
+    const post = await getPost(decodeURIComponent(params.slug));
     if (!post) {
         return {};
     }
@@ -68,14 +66,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug); // getPost handles decoding
+  // In dynamic pages, Next.js automatically decodes the slug.
+  const post = await getPost(params.slug); 
 
   if (!post) {
     notFound();
   }
-
-  const allPosts = await getPosts();
-  const relatedPosts = allPosts.filter(p => p.id !== post.id).slice(0, 2);
+  
+  const relatedPosts = await getRelatedPosts(post.id);
   
   const articleSchema = {
     "@context": "https://schema.org",
