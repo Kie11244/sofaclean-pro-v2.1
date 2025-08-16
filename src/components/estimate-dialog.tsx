@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileImage, Trash2, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { db } from '@/lib/firebase';
+import { collection, addDoc } from "firebase/firestore";
 
 interface EstimateDialogProps {
     children: React.ReactNode;
@@ -37,6 +39,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
     const [images, setImages] = useState<ImageFile[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
@@ -56,11 +59,11 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             const newImages: ImageFile[] = [];
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                 if (file.size > 4 * 1024 * 1024) { // 4MB limit per file
+                 if (file.size > 5 * 1024 * 1024) { // 5MB limit per file
                     toast({
                         variant: "destructive",
                         title: "รูปภาพมีขนาดใหญ่เกินไป",
-                        description: `ไฟล์ "${file.name}" มีขนาดใหญ่กว่า 4MB`,
+                        description: `ไฟล์ "${file.name}" มีขนาดใหญ่กว่า 5MB`,
                     });
                     continue; // Skip this file
                 }
@@ -92,7 +95,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    // Using a free reverse geocoding service (Nominatim)
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
                     const data = await response.json();
                     if (data && data.display_name) {
@@ -106,7 +108,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                         title: "ไม่สามารถดึงที่อยู่ได้",
                         description: "กรุณาลองอีกครั้งหรือพิมพ์ด้วยตนเอง",
                     });
-                     // Fallback to coordinates if API fails
                     setAddress(`Lat: ${latitude}, Lon: ${longitude}`);
                 } finally {
                     setIsFetchingLocation(false);
@@ -134,14 +135,58 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             return;
         }
 
-        // For now, we just show a success message and close the dialog.
-        // In the future, this can be connected to an email service or backend.
-        toast({
-            title: "ส่งข้อมูลสำเร็จ",
-            description: "เราได้รับข้อมูลของคุณแล้ว และจะติดต่อกลับโดยเร็วที่สุด",
-        });
+        setIsSubmitting(true);
+        let uploadedImageUrls: string[] = [];
 
-        handleOpenChange(false);
+        try {
+            // 1. Upload images if any
+            if (images.length > 0) {
+                const formData = new FormData();
+                images.forEach(imageFile => {
+                    formData.append('files', imageFile.file);
+                });
+
+                const uploadResponse = await fetch('/api/upload-image', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const uploadResult = await uploadResponse.json();
+
+                if (!uploadResult.success || !uploadResult.urls) {
+                     throw new Error(uploadResult.error || "Image upload failed");
+                }
+                uploadedImageUrls = uploadResult.urls;
+            }
+
+            // 2. Save quote data to Firestore
+            await addDoc(collection(db, "quotes"), {
+                name,
+                phone,
+                address,
+                description,
+                imageUrls: uploadedImageUrls,
+                createdAt: new Date(),
+                status: "new",
+            });
+            
+            toast({
+                title: "ส่งข้อมูลสำเร็จ",
+                description: "เราได้รับข้อมูลของคุณแล้ว และจะติดต่อกลับโดยเร็วที่สุด",
+            });
+
+            handleOpenChange(false);
+
+        } catch (error) {
+             console.error("Error submitting quote:", error);
+             toast({
+                variant: "destructive",
+                title: "เกิดข้อผิดพลาด",
+                description: "ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const resetDialog = () => {
@@ -151,12 +196,12 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setDescription("");
         setImages([]);
         setIsFetchingLocation(false);
+        setIsSubmitting(false);
     };
 
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
         if (!open) {
-           // Reset state after closing animation
            setTimeout(() => {
                 resetDialog();
            }, 300);
@@ -233,7 +278,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                             <Upload className="mr-2 h-4 w-4" />
                             เลือกรูปภาพ
                         </Button>
-                         <p className="text-sm text-muted-foreground">แต่ละไฟล์ต้องมีขนาดไม่เกิน 4MB</p>
+                         <p className="text-sm text-muted-foreground">แต่ละไฟล์ต้องมีขนาดไม่เกิน 5MB</p>
                     </div>
                     {images.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -253,13 +298,14 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button" variant="outline">ยกเลิก</Button>
+                        <Button type="button" variant="outline" disabled={isSubmitting}>ยกเลิก</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleFormSubmit}>
-                        ส่งข้อมูลเพื่อขอใบเสนอราคา
+                    <Button type="submit" onClick={handleFormSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> กำลังส่งข้อมูล...</> : 'ส่งข้อมูลเพื่อขอใบเสนอราคา'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
+
