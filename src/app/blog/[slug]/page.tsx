@@ -30,8 +30,8 @@ export const dynamic = 'force-dynamic';
 
 // Fetch a single post by slug
 async function getPost(slug: string): Promise<Post | null> {
-    // The slug from params is already decoded by Next.js in dynamic rendering
-    const q = query(collection(db, "posts"), where("slug", "==", slug));
+    const decodedSlug = decodeURIComponent(slug);
+    const q = query(collection(db, "posts"), where("slug", "==", decodedSlug));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         return null;
@@ -54,8 +54,7 @@ async function getRelatedPosts(currentPostId: string): Promise<Post[]> {
 
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    // We need to decode it here for metadata generation
-    const post = await getPost(decodeURIComponent(params.slug));
+    const post = await getPost(params.slug);
     if (!post) {
         return {};
     }
@@ -69,8 +68,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  // In dynamic pages, Next.js automatically decodes the slug.
-  const post = await getPost(decodeURIComponent(params.slug)); 
+  const post = await getPost(params.slug); 
 
   if (!post) {
     notFound();
