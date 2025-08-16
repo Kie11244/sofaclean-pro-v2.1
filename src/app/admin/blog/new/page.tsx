@@ -129,7 +129,7 @@ export default function NewBlogPostPage() {
                                     <AccordionTrigger>
                                         <div className="flex items-center gap-2">
                                             <Sparkles className="h-5 w-5 text-yellow-500" />
-                                            <span className="font-semibold">การตั้งค่า SEO</span>
+                                            <span className="font-semibold">การตั้งค่า SEO (แนะนำ)</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="space-y-4 pt-4">
