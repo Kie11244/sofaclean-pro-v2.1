@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,25 +16,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, Paperclip, XCircle } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
-
 
 interface EstimateDialogProps {
     children: React.ReactNode;
 }
+
+// Function to convert file to Base64
+const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+});
 
 export function EstimateDialog({ children }: EstimateDialogProps) {
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
     const [description, setDescription] = useState("");
+    const [images, setImages] = useState<File[]>([]);
+    
     const [isOpen, setIsOpen] = useState(false);
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { toast } = useToast();
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            // Limit to 5 images total
+            if (images.length + newFiles.length > 5) {
+                toast({
+                    variant: "destructive",
+                    title: "จำกัด 5 รูปภาพ",
+                    description: "คุณสามารถแนบรูปภาพได้สูงสุด 5 รูป",
+                });
+                return;
+            }
+            setImages(prev => [...prev, ...newFiles]);
+        }
+    };
+    
+    const removeImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+    };
     
     const handleFetchLocation = () => {
         if (!navigator.geolocation) {
@@ -51,6 +80,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
+                    // Using a free, no-key reverse geocoding API
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
                     const data = await response.json();
                     if (data && data.display_name) {
@@ -94,11 +124,29 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setIsSubmitting(true);
         
         try {
+            // Convert images to Base64
+            const imagePromises = images.map(file => toBase64(file));
+            const imageBase64Strings = await Promise.all(imagePromises);
+
+            // Firestore document size limit is 1 MiB. Check if total size exceeds a safe threshold (e.g., 950 KB)
+            const totalSize = imageBase64Strings.reduce((sum, str) => sum + str.length, 0);
+            if (totalSize > 950 * 1024) {
+                 toast({
+                    variant: "destructive",
+                    title: "ขนาดไฟล์รูปภาพใหญ่เกินไป",
+                    description: "กรุณาลดขนาดหรือจำนวนรูปภาพ (ขนาดรวมต้องไม่เกิน 1MB)",
+                });
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Save quote data along with Base64 image strings to Firestore
             await addDoc(collection(db, "quotes"), {
                 name,
                 phone,
                 address,
                 description,
+                images: imageBase64Strings, // Store array of Base64 strings
                 createdAt: new Date(),
                 status: "new",
             });
@@ -127,6 +175,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setPhone("");
         setAddress("");
         setDescription("");
+        setImages([]);
         setIsFetchingLocation(false);
         setIsSubmitting(false);
     };
@@ -134,6 +183,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
         if (!open) {
+           // Delay resetting form to allow closing animation to finish
            setTimeout(() => {
                 resetDialog();
            }, 300);
@@ -194,6 +244,38 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                             placeholder="เช่น โซฟาผ้า 3 ที่นั่ง มีรอยคราบกาแฟและฝุ่นสะสม"
                             rows={3}
                         />
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="images">แนบรูปภาพ (ถ้ามี)</Label>
+                         <div className="flex items-center gap-2">
+                            <Button asChild variant="outline" size="sm">
+                                <label htmlFor="image-upload" className="cursor-pointer">
+                                    <Paperclip className="mr-2 h-4 w-4" />
+                                    เลือกรูปภาพ
+                                </label>
+                            </Button>
+                            <Input id="image-upload" type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
+                            <span className="text-xs text-muted-foreground">{images.length} รูปที่เลือก (สูงสุด 5 รูป)</span>
+                         </div>
+                         <div className="mt-2 grid grid-cols-3 gap-2">
+                            {images.map((file, index) => (
+                                <div key={index} className="relative group">
+                                    <img 
+                                        src={URL.createObjectURL(file)} 
+                                        alt={`preview ${index}`} 
+                                        className="h-24 w-full object-cover rounded-md" 
+                                    />
+                                    <Button 
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => removeImage(index)}
+                                    >
+                                        <XCircle className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                         </div>
                     </div>
                 </div>
 
