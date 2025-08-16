@@ -18,9 +18,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadImageAction } from '@/app/actions/upload-action';
 
 
 interface EstimateDialogProps {
@@ -143,15 +143,17 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             let uploadedImageUrls: string[] = [];
 
             if (images.length > 0) {
-                 const uploadPromises = images.map(imageFile => {
-                    const fileName = `quote_images/${Date.now()}_${imageFile.file.name}`;
-                    const storageRef = ref(storage, fileName);
-                    return uploadBytes(storageRef, imageFile.file).then(snapshot => {
-                        return getDownloadURL(snapshot.ref);
-                    });
-                });
+                 const formData = new FormData();
+                for (const imageFile of images) {
+                    formData.append('images', imageFile.file);
+                }
+
+                const uploadResult = await uploadImageAction(formData);
                 
-                uploadedImageUrls = await Promise.all(uploadPromises);
+                if (!uploadResult.success || !uploadResult.urls) {
+                     throw new Error(uploadResult.error || "Image upload failed");
+                }
+                uploadedImageUrls = uploadResult.urls;
             }
 
             // Save quote data to Firestore
