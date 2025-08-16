@@ -23,6 +23,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
 export interface Quote {
     id: string;
@@ -69,7 +70,7 @@ export default function QuotesListPage() {
     
     useEffect(() => {
         fetchQuotes();
-    }, [toast]);
+    }, []);
 
     const handleDelete = async (id: string) => {
         try {
@@ -255,3 +256,5 @@ export default function QuotesListPage() {
         </>
     );
 }
+
+    
