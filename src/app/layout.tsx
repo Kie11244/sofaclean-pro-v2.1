@@ -1,10 +1,12 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/auth-context';
 import { Kanit } from 'next/font/google';
-import { Header } from '@/components/header';
-import { FloatingContact } from '@/components/floating-contact';
+
+// This is the root layout. It does not contain language-specific elements
+// like Header or Footer, as those will be in the [lang] layout.
 
 export const metadata: Metadata = {
   title: 'Clean & Care Pro - บริการซักโซฟา ซักเบาะรถยนต์ โดยมืออาชีพ',
@@ -26,9 +28,7 @@ export default function RootLayout({
     <html lang="th" className={kanit.variable} suppressHydrationWarning>
       <body className="font-body antialiased">
         <AuthProvider>
-          <Header />
-          <main>{children}</main>
-          <FloatingContact />
+          {children}
           <Toaster />
         </AuthProvider>
       </body>

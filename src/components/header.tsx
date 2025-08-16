@@ -1,21 +1,36 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import dict from '@/lib/dictionaries/th.json';
 import { cn } from '@/lib/utils';
+import type { getDictionary } from '@/lib/dictionaries';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
-export function Header() {
+
+interface HeaderProps {
+    dictionary: Awaited<ReturnType<typeof getDictionary>>;
+    lang: 'th' | 'en';
+}
+
+
+export function Header({ dictionary, lang }: HeaderProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const pathname = usePathname();
     
-    const navLinks = dict.navigation.links;
+    const navLinks = dictionary.navigation.links;
 
-    const isHomePage = pathname === '/';
+    // We check if the current path is the root for the current language
+    const isHomePage = pathname === `/${lang}` || pathname === '/';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -27,6 +42,15 @@ export function Header() {
 
     const isTransparent = isHomePage && !isScrolled && !isOpen;
 
+    // Function to generate a link for the other language
+    const getLanguageSwitchPath = (currentPath: string, newLang: 'th' | 'en') => {
+        const currentLang = currentPath.split('/')[1];
+        if (currentLang === 'th' || currentLang === 'en') {
+             return `/${newLang}${currentPath.substring(3)}`;
+        }
+        return `/${newLang}${currentPath}`;
+    }
+
     return (
         <header className={cn(
             "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
@@ -35,7 +59,7 @@ export function Header() {
             <div className="container mx-auto px-6">
                 <div className="flex items-center justify-between h-20">
                     <div className="text-2xl font-bold">
-                        <Link href="/" className={cn(isTransparent ? "text-white" : "text-emerald-600")}>
+                        <Link href={`/${lang}`} className={cn(isTransparent ? "text-white" : "text-emerald-600")}>
                             Clean & Care
                         </Link>
                     </div>
@@ -43,17 +67,47 @@ export function Header() {
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center space-x-6">
                         {navLinks && navLinks.map((link: { href: string; label: string; }) => (
-                            <Link key={link.href} href={link.href} className="font-medium hover:text-emerald-500 transition-colors">
+                            <Link key={link.href} href={`/${lang}${link.href.substring(1)}`} className="font-medium hover:text-emerald-500 transition-colors">
                                 {link.label}
                             </Link>
                         ))}
                         <Button asChild>
-                            <Link href="/#booking">{dict.navigation.contact}</Link>
+                            <Link href={`/${lang}/#booking`}>{dictionary.navigation.contact}</Link>
                         </Button>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Languages />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={getLanguageSwitchPath(pathname, 'th')}>ไทย</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={getLanguageSwitchPath(pathname, 'en')}>English</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </nav>
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden flex items-center">
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Languages />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={getLanguageSwitchPath(pathname, 'th')}>ไทย</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={getLanguageSwitchPath(pathname, 'en')}>English</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button onClick={() => setIsOpen(!isOpen)} variant="ghost" size="icon" className="ml-2">
                             <Menu className={cn("h-6 w-6", { 'hidden': isOpen })}/>
                             <X className={cn("h-6 w-6", { 'hidden': !isOpen })}/>
@@ -69,12 +123,12 @@ export function Header() {
             )}>
                 <nav className="flex flex-col items-center p-6 space-y-4">
                      {navLinks && navLinks.map((link: { href: string; label: string; }) => (
-                        <Link key={link.href} href={link.href} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
+                        <Link key={link.href} href={`/${lang}${link.href.substring(1)}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
                             {link.label}
                         </Link>
                     ))}
                     <Button asChild className="w-full">
-                        <Link href="/#booking" onClick={() => setIsOpen(false)}>{dict.navigation.contact}</Link>
+                        <Link href={`/${lang}/#booking`} onClick={() => setIsOpen(false)}>{dictionary.navigation.contact}</Link>
                     </Button>
                 </nav>
             </div>
