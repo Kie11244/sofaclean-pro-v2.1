@@ -2,25 +2,26 @@ import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import { getStorage } from 'firebase-admin/storage';
 import { Readable } from 'stream';
-import { projectId } from '@/lib/firebase-config'; // Use a separate config for admin
+import { projectId } from '@/lib/firebase-config';
 
-// Function to initialize Firebase Admin SDK if not already initialized
+// This is a robust way to initialize Firebase Admin SDK in a serverless environment
 function initializeFirebaseAdmin() {
-  if (admin.apps.length === 0) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-        storageBucket: `${projectId}.appspot.com`,
-        projectId: projectId,
-      });
-      console.log("Firebase Admin SDK initialized successfully.");
-    } catch (error: any) {
-      console.error("Firebase Admin SDK initialization error:", error.message);
-      // Throw an error to be caught by the handler
-      throw new Error(`Firebase admin initialization failed: ${error.message}`);
+    if (!admin.apps.length) {
+        try {
+            admin.initializeApp({
+                credential: admin.credential.applicationDefault(),
+                storageBucket: `${projectId}.appspot.com`,
+            });
+             console.log("Firebase Admin SDK initialized.");
+        } catch (error: any) {
+            console.error("Firebase Admin SDK initialization error:", error.message);
+            // We re-throw the error to be caught by the handler
+            throw new Error(`Firebase admin initialization failed: ${error.message}`);
+        }
     }
-  }
+    return admin.app();
 }
+
 
 export async function POST(request: Request) {
     try {
@@ -46,23 +47,24 @@ export async function POST(request: Request) {
             const blob = bucket.file(safeFileName);
 
             const fileBuffer = Buffer.from(await file.arrayBuffer());
-            const stream = Readable.from(fileBuffer);
-
+            
             return new Promise<string>((resolve, reject) => {
-                const streamWriter = stream.pipe(blob.createWriteStream({
+                const stream = blob.createWriteStream({
                     resumable: false,
                     contentType: file.type,
-                }));
+                });
 
-                streamWriter.on('error', (err) => {
+                stream.on('error', (err) => {
                     console.error(`Error uploading ${file.name}:`, err);
                     reject(new Error(`Failed to upload ${file.name}: ${err.message}`));
                 });
 
-                streamWriter.on('finish', () => {
+                stream.on('finish', () => {
                      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${safeFileName}`;
                     resolve(publicUrl);
                 });
+                
+                stream.end(fileBuffer);
             });
         });
 
