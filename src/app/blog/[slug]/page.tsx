@@ -25,6 +25,9 @@ interface Post extends DocumentData {
     metaDescription?: string;
 }
 
+// This tells Next.js to re-fetch the data on every request, ensuring new posts appear.
+export const dynamic = 'force-dynamic';
+
 // Fetch a single post by slug
 async function getPost(slug: string): Promise<Post | null> {
     // The slug from params is already decoded by Next.js in dynamic rendering
@@ -67,7 +70,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   // In dynamic pages, Next.js automatically decodes the slug.
-  const post = await getPost(params.slug); 
+  const post = await getPost(decodeURIComponent(params.slug)); 
 
   if (!post) {
     notFound();
