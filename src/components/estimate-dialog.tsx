@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Loader2, Paperclip, XCircle } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface EstimateDialogProps {
     children: React.ReactNode;
@@ -147,7 +147,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                 address,
                 description,
                 images: imageBase64Strings, // Store array of Base64 strings
-                createdAt: new Date(),
+                createdAt: serverTimestamp(),
                 status: "new",
             });
             

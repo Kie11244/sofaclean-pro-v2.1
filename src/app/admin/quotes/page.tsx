@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
@@ -21,6 +21,8 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 export interface Quote {
     id: string;
@@ -30,8 +32,15 @@ export interface Quote {
     description: string;
     images: string[];
     createdAt: Timestamp;
-    status: string;
+    status: 'new' | 'contacted' | 'completed' | 'cancelled';
 }
+
+const statusMap: Record<Quote['status'], { text: string; className: string }> = {
+    new: { text: "ใหม่", className: "bg-blue-500 hover:bg-blue-500" },
+    contacted: { text: "ติดต่อแล้ว", className: "bg-yellow-500 hover:bg-yellow-500" },
+    completed: { text: "สำเร็จ", className: "bg-green-500 hover:bg-green-500" },
+    cancelled: { text: "ยกเลิก", className: "bg-gray-500 hover:bg-gray-500" },
+};
 
 export default function QuotesListPage() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -60,7 +69,7 @@ export default function QuotesListPage() {
     
     useEffect(() => {
         fetchQuotes();
-    }, []);
+    }, [toast]);
 
     const handleDelete = async (id: string) => {
         try {
@@ -76,6 +85,27 @@ export default function QuotesListPage() {
                 variant: "destructive",
                 title: "เกิดข้อผิดพลาด",
                 description: "ไม่สามารถลบใบเสนอราคาได้",
+            });
+        }
+    };
+
+    const handleStatusChange = async (quoteId: string, newStatus: Quote['status']) => {
+        try {
+            const quoteRef = doc(db, 'quotes', quoteId);
+            await updateDoc(quoteRef, { status: newStatus });
+            setQuotes(prevQuotes =>
+                prevQuotes.map(q => (q.id === quoteId ? { ...q, status: newStatus } : q))
+            );
+            toast({
+                title: "อัปเดตสถานะสำเร็จ",
+                description: `สถานะของใบเสนอราคาถูกเปลี่ยนเป็น "${statusMap[newStatus].text}"`,
+            });
+        } catch (error) {
+            console.error("Error updating status: ", error);
+             toast({
+                variant: "destructive",
+                title: "เกิดข้อผิดพลาด",
+                description: "ไม่สามารถอัปเดตสถานะได้",
             });
         }
     };
@@ -122,40 +152,62 @@ export default function QuotesListPage() {
                                 <div className="space-y-6">
                                     {quotes.map((quote) => (
                                         <Card key={quote.id} className="overflow-hidden">
-                                            <CardHeader className="bg-gray-100/80">
-                                                <div className="flex justify-between items-start">
+                                            <CardHeader className="bg-gray-100/80 p-4">
+                                                <div className="flex flex-wrap justify-between items-center gap-4">
                                                     <div>
                                                         <CardTitle className="text-lg">คุณ {quote.name}</CardTitle>
                                                         <CardDescription>
                                                             ส่งเมื่อ: {formatDate(quote.createdAt)}
                                                         </CardDescription>
                                                     </div>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="sm">ลบ</Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+                                                    <div className="flex items-center gap-3">
+                                                         <Badge className={statusMap[quote.status]?.className || ''}>
+                                                            {statusMap[quote.status]?.text || quote.status}
+                                                        </Badge>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="destructive" size="sm">ลบ</Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
                                                 </div>
                                             </CardHeader>
-                                            <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div>
                                                     <h4 className="font-semibold mb-2">ข้อมูลติดต่อ</h4>
                                                     <p><strong className="font-medium">เบอร์โทร:</strong> {quote.phone}</p>
                                                     <p><strong className="font-medium">ที่อยู่:</strong> {quote.address || "ไม่ได้ระบุ"}</p>
                                                     <h4 className="font-semibold mt-4 mb-2">รายละเอียดงาน</h4>
                                                     <p className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md">{quote.description}</p>
+                                                     <div className="mt-4">
+                                                        <Label>เปลี่ยนสถานะ</Label>
+                                                        <Select
+                                                            value={quote.status}
+                                                            onValueChange={(value) => handleStatusChange(quote.id, value as Quote['status'])}
+                                                        >
+                                                            <SelectTrigger className="w-[180px]">
+                                                                <SelectValue placeholder="เลือกสถานะ" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="new">ใหม่</SelectItem>
+                                                                <SelectItem value="contacted">ติดต่อแล้ว</SelectItem>
+                                                                <SelectItem value="completed">สำเร็จ</SelectItem>
+                                                                <SelectItem value="cancelled">ยกเลิก</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <h4 className="font-semibold mb-2">รูปภาพที่แนบมา</h4>
