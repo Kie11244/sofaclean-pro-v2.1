@@ -1,4 +1,5 @@
 
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
@@ -30,30 +31,14 @@ interface HomePageData {
     afterImageUrl: string;
 }
 
+interface ContactSettings {
+  phone: string;
+  facebookUrl: string;
+  lineUrl: string;
+}
+
 type Props = {
   params: { lang: 'en' | 'th' };
-};
-
-const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "SofaClean Pro",
-    "url": "https://your-website-url.com",
-    "logo": "https://your-website-url.com/logo.png",
-    "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+66-81-234-5678",
-        "contactType": "Customer Service"
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "123 Sukhumvit Road",
-      "addressLocality": "Bangkok",
-      "postalCode": "10110",
-      "addressCountry": "TH"
-    },
-    "description": "บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ซักม่าน และที่นอนครบวงจร พร้อมบริการถึงบ้านและคอนโดในเขตกรุงเทพและปริมณฑล",
-    "sameAs": [ "https://www.facebook.com/your-page", "https://line.me/ti/p/~yourlineid" ]
 };
 
 async function getRecentPosts(): Promise<Post[]> {
@@ -79,14 +64,53 @@ async function getHomePageData(): Promise<HomePageData> {
     }
 }
 
+async function getContactSettings(): Promise<ContactSettings> {
+    const docRef = doc(db, "settings", "contact");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return docSnap.data() as ContactSettings;
+    } else {
+        // Return default data if document doesn't exist
+        return {
+            phone: "0812345678",
+            facebookUrl: "https://www.facebook.com/your-page",
+            lineUrl: "https://line.me/ti/p/~yourlineid"
+        };
+    }
+}
+
 
 export default async function Home({ params: { lang } }: Props) {
   const blogPosts = await getRecentPosts();
   const homePageData = await getHomePageData();
+  const contactSettings = await getContactSettings();
   const dict = await getDictionary(lang);
   
   const faqData = dict.faqData;
   const whyUsData = dict.whyUsData;
+  
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "SofaClean Pro",
+    "url": "https://your-website-url.com",
+    "logo": "https://your-website-url.com/logo.png",
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": `+${contactSettings.phone.replace(/^0/, '66-')}`,
+        "contactType": "Customer Service"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "123 Sukhumvit Road",
+      "addressLocality": "Bangkok",
+      "postalCode": "10110",
+      "addressCountry": "TH"
+    },
+    "description": "บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ซักม่าน และที่นอนครบวงจร พร้อมบริการถึงบ้านและคอนโดในเขตกรุงเทพและปริมณฑล",
+    "sameAs": [ contactSettings.facebookUrl, contactSettings.lineUrl ]
+  };
 
   const faqPageSchema = {
       "@context": "https://schema.org",
@@ -304,7 +328,7 @@ export default async function Home({ params: { lang } }: Props) {
                       <h2 className="text-3xl md:text-4xl font-bold mb-4">{dict.booking.title}</h2>
                       <p className="text-gray-300 mb-8 max-w-2xl mx-auto">{dict.booking.description}</p>
                       <Button asChild size="lg" className="text-xl h-14 px-10 rounded-full font-bold transition-transform duration-300 hover:scale-105 bg-emerald-500 hover:bg-emerald-600">
-                        <a href="tel:0812345678"><Phone className="mr-2" /> {dict.booking.cta}</a>
+                        <a href={`tel:${contactSettings.phone}`}><Phone className="mr-2" /> {dict.booking.cta.replace('081-234-5678', contactSettings.phone)}</a>
                       </Button>
                   </div>
               </section>

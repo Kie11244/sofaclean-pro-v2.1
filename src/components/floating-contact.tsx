@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -7,11 +8,73 @@ import { LineIcon } from './icons/line-icon';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import dict from '@/lib/dictionaries/th.json';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+interface ContactSettings {
+    phone: string;
+    facebookUrl: string;
+    lineUrl: string;
+}
 
 export function FloatingContact() {
     const [isOpen, setIsOpen] = useState(false);
+    const [contactLinks, setContactLinks] = useState([
+        {
+            href: "https://www.facebook.com/your-page",
+            label: "Facebook",
+            icon: <FacebookIcon className="h-7 w-7 text-white" aria-hidden="true" />,
+            bgClass: "bg-blue-600 hover:bg-blue-700"
+        },
+        {
+            href: "https://line.me/ti/p/~yourlineid",
+            label: "Line",
+            icon: <LineIcon className="h-7 w-7 text-white" aria-hidden="true" />,
+            bgClass: "bg-green-500 hover:bg-green-600"
+        },
+        {
+            href: "tel:0812345678",
+            label: "Phone",
+            icon: <Phone className="h-7 w-7 text-white" aria-hidden="true" />,
+            bgClass: "bg-indigo-600 hover:bg-indigo-700"
+        }
+    ]);
+
     const wrapperRef = useRef<HTMLDivElement>(null);
     
+    useEffect(() => {
+        const fetchContactSettings = async () => {
+            const docRef = doc(db, "settings", "contact");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data() as ContactSettings;
+                setContactLinks([
+                    {
+                        href: data.facebookUrl,
+                        label: "Facebook",
+                        icon: <FacebookIcon className="h-7 w-7 text-white" aria-hidden="true" />,
+                        bgClass: "bg-blue-600 hover:bg-blue-700"
+                    },
+                    {
+                        href: data.lineUrl,
+                        label: "Line",
+                        icon: <LineIcon className="h-7 w-7 text-white" aria-hidden="true" />,
+                        bgClass: "bg-green-500 hover:bg-green-600"
+                    },
+                    {
+                        href: `tel:${data.phone}`,
+                        label: "Phone",
+                        icon: <Phone className="h-7 w-7 text-white" aria-hidden="true" />,
+                        bgClass: "bg-indigo-600 hover:bg-indigo-700"
+                    }
+                ]);
+            }
+        };
+
+        fetchContactSettings();
+    }, []);
+
     const handleLinkClick = () => {
         setIsOpen(false);
     };
@@ -33,27 +96,6 @@ export function FloatingContact() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen]);
-
-    const contactLinks = [
-        {
-            href: "https://www.facebook.com/your-page",
-            label: "Facebook",
-            icon: <FacebookIcon className="h-7 w-7 text-white" aria-hidden="true" />,
-            bgClass: "bg-blue-600 hover:bg-blue-700"
-        },
-        {
-            href: "https://line.me/ti/p/~yourlineid",
-            label: "Line",
-            icon: <LineIcon className="h-7 w-7 text-white" aria-hidden="true" />,
-            bgClass: "bg-green-500 hover:bg-green-600"
-        },
-        {
-            href: "tel:0812345678",
-            label: "Phone",
-            icon: <Phone className="h-7 w-7 text-white" aria-hidden="true" />,
-            bgClass: "bg-indigo-600 hover:bg-indigo-700"
-        }
-    ];
 
     const toggleButtonLabel = isOpen ? dict.floatingContact.close : dict.floatingContact.open;
 
