@@ -25,29 +25,18 @@ interface EstimateDialogProps {
     children: React.ReactNode;
 }
 
-// Function to convert file to Base64
-const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-});
-
 async function compressImage(file: File): Promise<File> {
     const options = {
-        maxSizeMB: 0.5, // Max size in MB
-        maxWidthOrHeight: 1024, // Max width or height
+        maxSizeMB: 1, 
+        maxWidthOrHeight: 1920,
         useWebWorker: true,
         initialQuality: 0.7,
     };
     try {
-        console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         const compressedFile = await imageCompression(file, options);
-        console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
         return compressedFile;
     } catch (error) {
         console.error('Image compression error:', error);
-        // Return original file if compression fails
         return file;
     }
 }
@@ -101,7 +90,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    // Using a free, no-key reverse geocoding API
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
                     const data = await response.json();
                     if (data && data.display_name) {
@@ -145,32 +133,39 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setIsSubmitting(true);
         
         try {
-            // Compress images first
-            const compressedImages = await Promise.all(images.map(file => compressImage(file)));
+            const imageUrls: string[] = [];
 
-            // Convert images to Base64
-            const imagePromises = compressedImages.map(file => toBase64(file));
-            const imageBase64Strings = await Promise.all(imagePromises);
+            if (images.length > 0) {
+                 // First, compress all images
+                const compressedImages = await Promise.all(images.map(file => compressImage(file)));
 
-            // Firestore document size limit is 1 MiB. Check if total size exceeds a safe threshold (e.g., 950 KB)
-            const totalSize = imageBase64Strings.reduce((sum, str) => sum + str.length, 0);
-            if (totalSize > 950 * 1024) {
-                 toast({
-                    variant: "destructive",
-                    title: "ขนาดไฟล์รูปภาพใหญ่เกินไป",
-                    description: "กรุณาลดขนาดหรือจำนวนรูปภาพ (ขนาดรวมต้องไม่เกิน 1MB)",
-                });
-                setIsSubmitting(false);
-                return;
+                // Then, upload them one by one
+                for (const file of compressedImages) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const uploadResponse = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json();
+                        throw new Error(errorData.error || 'Image upload failed');
+                    }
+                    
+                    const result = await uploadResponse.json();
+                    imageUrls.push(result.url);
+                }
             }
 
-            // Save quote data along with Base64 image strings to Firestore
+            // Save quote data along with the image URLs to Firestore
             await addDoc(collection(db, "quotes"), {
                 name,
                 phone,
                 address,
                 description,
-                images: imageBase64Strings, // Store array of Base64 strings
+                images: imageUrls,
                 createdAt: serverTimestamp(),
                 status: "new",
             });
@@ -187,7 +182,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
              toast({
                 variant: "destructive",
                 title: "เกิดข้อผิดพลาดในการส่งข้อมูล",
-                description: error.message || "ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+                description: `ไม่สามารถส่งข้อมูลได้: ${error.message}`,
             });
         } finally {
             setIsSubmitting(false);
@@ -207,7 +202,6 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
         if (!open) {
-           // Delay resetting form to allow closing animation to finish
            setTimeout(() => {
                 resetDialog();
            }, 300);
