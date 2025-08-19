@@ -321,5 +321,3 @@ export default async function Home({ params: { lang } }: Props) {
     </>
   );
 }
-
-    

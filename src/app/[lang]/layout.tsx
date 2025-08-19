@@ -25,13 +25,18 @@ export async function generateStaticParams() {
 export default async function LangLayout({
   children,
   params: { lang },
-}: Props) {
+}: Readonly<{
+  children: React.ReactNode;
+  params: { lang: 'en' | 'th' };
+}>) {
     const dict = await getDictionary(lang);
   return (
-    <>
-      <Header dictionary={dict} lang={lang} />
-      <main>{children}</main>
-      <FloatingContact />
-    </>
+    <html lang={lang}>
+      <body>
+        <Header dictionary={dict} lang={lang} />
+        <main>{children}</main>
+        <FloatingContact />
+      </body>
+    </html>
   );
 }

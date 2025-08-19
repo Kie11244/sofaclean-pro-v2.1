@@ -38,19 +38,19 @@ export function FloatingContact() {
         {
             href: "https://www.facebook.com/your-page",
             label: "Facebook",
-            icon: <FacebookIcon className="h-7 w-7 text-white" />,
+            icon: <FacebookIcon className="h-7 w-7 text-white" aria-hidden="true" />,
             bgClass: "bg-blue-600 hover:bg-blue-700"
         },
         {
             href: "https://line.me/ti/p/~yourlineid",
             label: "Line",
-            icon: <LineIcon className="h-7 w-7 text-white" />,
+            icon: <LineIcon className="h-7 w-7 text-white" aria-hidden="true" />,
             bgClass: "bg-green-500 hover:bg-green-600"
         },
         {
             href: "tel:0812345678",
             label: "Phone",
-            icon: <Phone className="h-7 w-7 text-white" />,
+            icon: <Phone className="h-7 w-7 text-white" aria-hidden="true" />,
             bgClass: "bg-indigo-600 hover:bg-indigo-700"
         }
     ];
@@ -89,8 +89,8 @@ export function FloatingContact() {
                 size="icon"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white w-16 h-16 rounded-full shadow-xl focus:outline-none relative"
             >
-                <ContactIcon className={cn("h-8 w-8 transition-all duration-300", isOpen ? 'opacity-0 scale-50 rotate-45' : 'opacity-100 scale-100 rotate-0')} />
-                <X className={cn("h-8 w-8 absolute transition-all duration-300", isOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-45')} />
+                <ContactIcon aria-hidden="true" className={cn("h-8 w-8 transition-all duration-300", isOpen ? 'opacity-0 scale-50 rotate-45' : 'opacity-100 scale-100 rotate-0')} />
+                <X aria-hidden="true" className={cn("h-8 w-8 absolute transition-all duration-300", isOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-45')} />
             </Button>
         </div>
     );

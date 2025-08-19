@@ -27,8 +27,8 @@ interface EstimateDialogProps {
 
 async function compressImage(file: File): Promise<File> {
     const options = {
-        maxSizeMB: 0.5, // Aim for a smaller size
-        maxWidthOrHeight: 800, // Resize to a smaller dimension
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
         useWebWorker: true,
         initialQuality: 0.7,
     };
@@ -254,7 +254,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                         />
                     </div>
                      <div className="grid gap-2">
-                        <Label htmlFor="images">แนบรูปภาพ (ถ้ามี)</Label>
+                        <Label htmlFor="images">แนบรูปภาพ (สูงสุด {MAX_IMAGES} รูป)</Label>
                          <div className="flex items-center gap-2">
                             <Button asChild variant="outline" size="sm">
                                 <label htmlFor="image-upload" className="cursor-pointer">
@@ -263,7 +263,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                                 </label>
                             </Button>
                             <Input id="image-upload" type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
-                            <span className="text-xs text-muted-foreground">{images.length} รูปที่เลือก (สูงสุด {MAX_IMAGES} รูป)</span>
+                            <span className="text-xs text-muted-foreground">{images.length} รูปที่เลือก</span>
                          </div>
                          <div className="mt-2 grid grid-cols-3 gap-2">
                             {images.map((file, index) => (
