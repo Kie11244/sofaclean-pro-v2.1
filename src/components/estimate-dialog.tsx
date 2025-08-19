@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Loader2, Paperclip, XCircle } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import imageCompression from 'browser-image-compression';
 
 interface EstimateDialogProps {
     children: React.ReactNode;
@@ -31,6 +32,26 @@ const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) 
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = error => reject(error);
 });
+
+async function compressImage(file: File): Promise<File> {
+    const options = {
+        maxSizeMB: 0.5, // Max size in MB
+        maxWidthOrHeight: 1024, // Max width or height
+        useWebWorker: true,
+        initialQuality: 0.7,
+    };
+    try {
+        console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+        const compressedFile = await imageCompression(file, options);
+        console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+        return compressedFile;
+    } catch (error) {
+        console.error('Image compression error:', error);
+        // Return original file if compression fails
+        return file;
+    }
+}
+
 
 export function EstimateDialog({ children }: EstimateDialogProps) {
     const [name, setName] = useState("");
@@ -124,8 +145,11 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
         setIsSubmitting(true);
         
         try {
+            // Compress images first
+            const compressedImages = await Promise.all(images.map(file => compressImage(file)));
+
             // Convert images to Base64
-            const imagePromises = images.map(file => toBase64(file));
+            const imagePromises = compressedImages.map(file => toBase64(file));
             const imageBase64Strings = await Promise.all(imagePromises);
 
             // Firestore document size limit is 1 MiB. Check if total size exceeds a safe threshold (e.g., 950 KB)
