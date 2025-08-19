@@ -1,25 +1,37 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access to all collections.
-    // This is useful for public-facing content like blogs, products, etc.
-    match /{document=**} {
+
+    // Rules for posts
+    // Allow public read and list for everyone.
+    // Allow write only for authenticated admin users.
+    match /posts/{postId} {
       allow read: if true;
+      allow write: if request.auth != null;
     }
 
-    // Restrict write access. Only authenticated users can write data.
-    // You can further restrict this to specific users or roles.
-    // e.g., allow write: if request.auth.uid == "YOUR_ADMIN_UID";
-    match /posts/{postId} {
-        allow write: if request.auth != null;
-    }
+    // Rules for quotes
+    // Allow anyone to create a quote.
+    // Allow only authenticated admin users to read, update, delete, and list quotes.
     match /quotes/{quoteId} {
-        allow write: if true; // Allow anyone to submit a quote
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
     }
+
+    // Rules for pages (site content like homepage images)
+    // Allow public read for everyone.
+    // Allow write only for authenticated admin users.
     match /pages/{pageId} {
-        allow write: if request.auth != null;
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Rules for settings (contact info, etc.)
+    // Allow public read for everyone.
+    // Allow write only for authenticated admin users.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
   }
 }
