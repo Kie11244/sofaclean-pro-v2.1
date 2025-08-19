@@ -27,8 +27,8 @@ interface EstimateDialogProps {
 
 async function compressImage(file: File): Promise<File> {
     const options = {
-        maxSizeMB: 1, 
-        maxWidthOrHeight: 1920,
+        maxSizeMB: 0.5, // Aim for a smaller size
+        maxWidthOrHeight: 800, // Resize to a smaller dimension
         useWebWorker: true,
         initialQuality: 0.7,
     };
@@ -41,6 +41,14 @@ async function compressImage(file: File): Promise<File> {
     }
 }
 
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
+}
 
 export function EstimateDialog({ children }: EstimateDialogProps) {
     const [name, setName] = useState("");
@@ -55,15 +63,16 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
 
     const { toast } = useToast();
 
+    const MAX_IMAGES = 3;
+
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
-            // Limit to 5 images total
-            if (images.length + newFiles.length > 5) {
+            if (images.length + newFiles.length > MAX_IMAGES) {
                 toast({
                     variant: "destructive",
-                    title: "จำกัด 5 รูปภาพ",
-                    description: "คุณสามารถแนบรูปภาพได้สูงสุด 5 รูป",
+                    title: `จำกัด ${MAX_IMAGES} รูปภาพ`,
+                    description: `คุณสามารถแนบรูปภาพได้สูงสุด ${MAX_IMAGES} รูป`,
                 });
                 return;
             }
@@ -136,30 +145,11 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             const imageUrls: string[] = [];
 
             if (images.length > 0) {
-                 // First, compress all images
-                const compressedImages = await Promise.all(images.map(file => compressImage(file)));
-
-                // Then, upload them one by one
-                for (const file of compressedImages) {
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    const uploadResponse = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json();
-                        throw new Error(errorData.error || 'Image upload failed');
-                    }
-                    
-                    const result = await uploadResponse.json();
-                    imageUrls.push(result.url);
-                }
+                const compressedImages = await Promise.all(images.map(compressImage));
+                const base64Images = await Promise.all(compressedImages.map(fileToBase64));
+                imageUrls.push(...base64Images);
             }
 
-            // Save quote data along with the image URLs to Firestore
             await addDoc(collection(db, "quotes"), {
                 name,
                 phone,
@@ -273,7 +263,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                                 </label>
                             </Button>
                             <Input id="image-upload" type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
-                            <span className="text-xs text-muted-foreground">{images.length} รูปที่เลือก (สูงสุด 5 รูป)</span>
+                            <span className="text-xs text-muted-foreground">{images.length} รูปที่เลือก (สูงสุด {MAX_IMAGES} รูป)</span>
                          </div>
                          <div className="mt-2 grid grid-cols-3 gap-2">
                             {images.map((file, index) => (
