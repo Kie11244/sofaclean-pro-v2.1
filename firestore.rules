@@ -1,39 +1,25 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow public read access to all collections.
+    // This is useful for public-facing content like blogs, products, etc.
+    match /{document=**} {
+      allow read: if true;
+    }
 
-    // Posts Collection
-    // This collection stores all blog articles.
+    // Restrict write access. Only authenticated users can write data.
+    // You can further restrict this to specific users or roles.
+    // e.g., allow write: if request.auth.uid == "YOUR_ADMIN_UID";
     match /posts/{postId} {
-      // Anyone can read a single post or a list of posts.
-      // This is necessary for the public blog pages to work.
-      allow read, list: if true;
-
-      // Only authenticated users (admins) can create, update, or delete posts.
-      allow write: if request.auth != null;
+        allow write: if request.auth != null;
     }
-
-    // Pages Collection
-    // This collection stores content for specific pages, like the homepage images.
-    match /pages/{pageId} {
-      // Anyone can read the content of pages.
-      // This is necessary for the homepage to display hero images, etc.
-      allow read, list: if true;
-
-      // Only authenticated users (admins) can modify page content.
-      allow write: if request.auth != null;
-    }
-
-    // Quotes Collection
-    // This collection stores quote requests from customers.
     match /quotes/{quoteId} {
-      // Anyone can submit a new quote request.
-      allow create: if true;
-
-      // Only authenticated users (admins) can view, list, update, or delete quotes.
-      // This protects customer data.
-      allow read, list, update, delete: if request.auth != null;
+        allow write: if true; // Allow anyone to submit a quote
+    }
+    match /pages/{pageId} {
+        allow write: if request.auth != null;
     }
   }
 }
