@@ -31,12 +31,10 @@ export default async function LangLayout({
 }>) {
     const dict = await getDictionary(lang);
   return (
-    <html lang={lang}>
-      <body>
-        <Header dictionary={dict} lang={lang} />
-        <main>{children}</main>
-        <FloatingContact />
-      </body>
-    </html>
+    <>
+      <Header dictionary={dict} lang={lang} />
+      <main>{children}</main>
+      <FloatingContact />
+    </>
   );
 }
