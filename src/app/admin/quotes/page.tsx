@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp, updateDoc } from "firebase/firestore";
@@ -20,11 +20,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Filter, Trash2 } from "lucide-react";
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { subDays, startOfDay } from 'date-fns';
 
 export interface Quote {
@@ -38,11 +38,11 @@ export interface Quote {
     status: 'new' | 'contacted' | 'completed' | 'cancelled';
 }
 
-const statusMap: Record<Quote['status'], { text: string; className: string }> = {
-    new: { text: "ใหม่", className: "bg-blue-500 hover:bg-blue-500" },
-    contacted: { text: "ติดต่อแล้ว", className: "bg-yellow-500 hover:bg-yellow-500" },
-    completed: { text: "สำเร็จ", className: "bg-green-500 hover:bg-green-500" },
-    cancelled: { text: "ยกเลิก", className: "bg-gray-500 hover:bg-gray-500" },
+const statusMap: Record<Quote['status'], { text: string; badgeClass: string; buttonClass: string; }> = {
+    new: { text: "ใหม่", badgeClass: "bg-blue-500 hover:bg-blue-500", buttonClass: "bg-blue-500 hover:bg-blue-600 text-white"},
+    contacted: { text: "ติดต่อแล้ว", badgeClass: "bg-yellow-500 hover:bg-yellow-500", buttonClass: "bg-yellow-500 hover:bg-yellow-600 text-white"},
+    completed: { text: "สำเร็จ", badgeClass: "bg-green-500 hover:bg-green-500", buttonClass: "bg-green-500 hover:bg-green-600 text-white"},
+    cancelled: { text: "ยกเลิก", badgeClass: "bg-gray-500 hover:bg-gray-500", buttonClass: "bg-gray-500 hover:bg-gray-600 text-white"},
 };
 
 export default function QuotesListPage() {
@@ -155,7 +155,7 @@ export default function QuotesListPage() {
 
     return (
         <>
-            <div className="min-h-screen bg-gray-50 p-8">
+            <div className="min-h-screen bg-gray-50 p-4 md:p-8">
                 <div className="max-w-6xl mx-auto">
                     <Card>
                         <CardHeader>
@@ -213,70 +213,36 @@ export default function QuotesListPage() {
                             ) : (
                                 <div className="space-y-6">
                                     {filteredQuotes.map((quote) => (
-                                        <Card key={quote.id} className="overflow-hidden">
+                                        <Card key={quote.id} className="overflow-hidden shadow-md">
                                             <CardHeader className="bg-gray-100/80 p-4">
-                                                 <div className="flex flex-wrap justify-between items-center gap-4">
+                                                 <div className="flex flex-wrap justify-between items-center gap-2">
                                                     <div>
-                                                        <CardTitle className="text-lg">คุณ {quote.name}</CardTitle>
+                                                        <CardTitle className="text-lg flex items-center gap-3">
+                                                           <span>คุณ {quote.name}</span> 
+                                                           <Badge className={statusMap[quote.status]?.badgeClass || ''}>
+                                                                {statusMap[quote.status]?.text || quote.status}
+                                                            </Badge>
+                                                        </CardTitle>
                                                         <CardDescription>
                                                             ส่งเมื่อ: {formatDate(quote.createdAt)}
                                                         </CardDescription>
                                                     </div>
-                                                    <div className="flex items-center gap-3">
-                                                         <Badge className={statusMap[quote.status]?.className || ''}>
-                                                            {statusMap[quote.status]?.text || quote.status}
-                                                        </Badge>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="destructive" size="sm">ลบ</Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </div>
                                                 </div>
                                             </CardHeader>
-                                            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                                 <div>
                                                     <h4 className="font-semibold mb-2">ข้อมูลติดต่อ</h4>
                                                     <p><strong className="font-medium">เบอร์โทร:</strong> {quote.phone}</p>
                                                     <p><strong className="font-medium">ที่อยู่:</strong> {quote.address || "ไม่ได้ระบุ"}</p>
                                                     <h4 className="font-semibold mt-4 mb-2">รายละเอียดงาน</h4>
-                                                    <p className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md">{quote.description}</p>
-                                                     <div className="mt-4">
-                                                        <Label>เปลี่ยนสถานะ</Label>
-                                                        <Select
-                                                            value={quote.status}
-                                                            onValueChange={(value) => handleStatusChange(quote.id, value as Quote['status'])}
-                                                        >
-                                                            <SelectTrigger className="w-[180px]">
-                                                                <SelectValue placeholder="เลือกสถานะ" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="new">ใหม่</SelectItem>
-                                                                <SelectItem value="contacted">ติดต่อแล้ว</SelectItem>
-                                                                <SelectItem value="completed">สำเร็จ</SelectItem>
-                                                                <SelectItem value="cancelled">ยกเลิก</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
+                                                    <p className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md border">{quote.description}</p>
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-semibold mb-2">รูปภาพที่แนบมา</h4>
+                                                    <h4 className="font-semibold mb-2">รูปภาพที่แนบมา ({quote.images?.length || 0})</h4>
                                                     {quote.images && quote.images.length > 0 ? (
-                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                                                             {quote.images.map((imgSrc, index) => (
-                                                                <button key={index} onClick={() => openGallery(quote.images, index)} className="focus:outline-none">
+                                                                <button key={index} onClick={() => openGallery(quote.images, index)} className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md">
                                                                     <Image
                                                                         src={imgSrc}
                                                                         alt={`รูปแนบ ${index + 1}`}
@@ -288,10 +254,51 @@ export default function QuotesListPage() {
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <p className="text-muted-foreground text-sm">ไม่มีรูปภาพแนบ</p>
+                                                        <p className="text-muted-foreground text-sm italic">ไม่มีรูปภาพแนบ</p>
                                                     )}
                                                 </div>
                                             </CardContent>
+                                            <CardFooter className="bg-gray-100/80 p-3 flex flex-wrap items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2">
+                                                     <span className="text-sm font-medium mr-2">เปลี่ยนสถานะ:</span>
+                                                     {(['new', 'contacted', 'completed', 'cancelled'] as const).map((status) => (
+                                                        <Button
+                                                            key={status}
+                                                            size="sm"
+                                                            className={cn(
+                                                                'transition-all',
+                                                                quote.status === status 
+                                                                    ? statusMap[status].buttonClass 
+                                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                            )}
+                                                            onClick={() => handleStatusChange(quote.id, status)}
+                                                        >
+                                                            {statusMap[status].text}
+                                                        </Button>
+                                                     ))}
+                                                </div>
+                                                
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                         <Button variant="destructive" size="sm">
+                                                             <Trash2 className="mr-2 h-4 w-4"/>
+                                                             ลบใบเสนอราคา
+                                                         </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                การกระทำนี้ไม่สามารถย้อนกลับได้ ใบเสนอราคาจะถูกลบออกจากฐานข้อมูลอย่างถาวร
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(quote.id)}>ยืนยันการลบ</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </CardFooter>
                                         </Card>
                                     ))}
                                 </div>
@@ -345,4 +352,5 @@ export default function QuotesListPage() {
             </Dialog>
         </>
     );
-}
+
+    
