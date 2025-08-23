@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where, DocumentData } from 'firebase/firestore';
 import {NextResponse} from 'next/server';
 
 interface Post extends DocumentData {
@@ -11,7 +11,11 @@ interface Post extends DocumentData {
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://psychic-glider-453312-k0.firebaseapp.com';
 
 export async function GET() {
-    const postsQuery = query(collection(db, 'posts'), orderBy('date', 'desc'));
+    const postsQuery = query(
+        collection(db, 'posts'), 
+        where('status', '==', 'published'),
+        orderBy('date', 'desc')
+    );
     const postsSnapshot = await getDocs(postsQuery);
     const posts: Post[] = postsSnapshot.docs.map(doc => doc.data() as Post);
 

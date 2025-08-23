@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,9 @@ import { useRouter } from "next/navigation";
 import { useState, FormEvent } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sparkles } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+type PostStatus = 'published' | 'draft';
 
 export default function NewBlogPostPage() {
     const [title, setTitle] = useState('');
@@ -22,6 +25,7 @@ export default function NewBlogPostPage() {
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
     const [content, setContent] = useState('');
+    const [status, setStatus] = useState<PostStatus>('draft');
     const [metaTitle, setMetaTitle] = useState('');
     const [metaDescription, setMetaDescription] = useState('');
     const [loading, setLoading] = useState(false);
@@ -50,6 +54,7 @@ export default function NewBlogPostPage() {
                 category,
                 description,
                 content,
+                status,
                 metaTitle: metaTitle || "",
                 metaDescription: metaDescription || "",
             });
@@ -93,6 +98,19 @@ export default function NewBlogPostPage() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
+                             <div className="space-y-2">
+                                <Label>สถานะ</Label>
+                                <RadioGroup defaultValue="draft" onValueChange={(value: PostStatus) => setStatus(value)} className="flex items-center gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="draft" id="draft" />
+                                        <Label htmlFor="draft">ฉบับร่าง</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="published" id="published" />
+                                        <Label htmlFor="published">เผยแพร่</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="title">หัวข้อเรื่อง *</Label>
                                 <Input id="title" value={title} onChange={handleTitleChange} placeholder="หัวข้อของบทความ" required/>
@@ -182,4 +200,3 @@ export default function NewBlogPostPage() {
         </div>
     );
 }
-    

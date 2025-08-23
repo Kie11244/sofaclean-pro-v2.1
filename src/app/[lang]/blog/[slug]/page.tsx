@@ -23,6 +23,7 @@ interface Post extends DocumentData {
     category: string;
     description: string;
     content: string;
+    status: 'published' | 'draft';
     metaTitle?: string;
     metaDescription?: string;
 }
@@ -37,18 +38,29 @@ export const dynamic = 'force-dynamic';
 // Fetch a single post by slug
 async function getPost(slug: string): Promise<Post | null> {
     const decodedSlug = decodeURIComponent(slug);
-    const q = query(collection(db, "posts"), where("slug", "==", decodedSlug));
+    const q = query(
+        collection(db, "posts"), 
+        where("slug", "==", decodedSlug)
+    );
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         return null;
     }
     const doc = querySnapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as Post;
+    const postData = { id: doc.id, ...doc.data() } as Post;
+
+    // Only return the post if it's published
+    if (postData.status !== 'published') {
+        return null;
+    }
+    
+    return postData;
 }
 
 async function getRelatedPosts(currentPostId: string): Promise<Post[]> {
     const q = query(
         collection(db, "posts"),
+        where("status", "==", "published"),
         orderBy("date", "desc"),
         limit(5) // Fetch a few more to filter out the current one
     );

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Reveal } from '@/components/reveal';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where, DocumentData } from 'firebase/firestore';
 import { getDictionary } from '@/lib/dictionaries';
 
 type Props = {
@@ -37,7 +37,11 @@ export async function generateMetadata({ params: { lang } }: Props): Promise<Met
 export const dynamic = 'force-dynamic';
 
 async function getPosts(): Promise<Post[]> {
-    const postsCol = query(collection(db, 'posts'), orderBy('date', 'desc'));
+    const postsCol = query(
+        collection(db, 'posts'), 
+        where('status', '==', 'published'),
+        orderBy('date', 'desc')
+    );
     const postSnapshot = await getDocs(postsCol);
     const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
     return postList;

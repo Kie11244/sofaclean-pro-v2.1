@@ -1,14 +1,15 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit, Eye, EyeOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,14 +20,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
+} from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export interface Post {
     id: string;
     title: string;
     slug: string;
     date: string;
+    status: 'published' | 'draft';
 }
 
 export default function BlogManagementPage() {
@@ -37,7 +42,8 @@ export default function BlogManagementPage() {
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            const querySnapshot = await getDocs(collection(db, "posts"));
+            const q = query(collection(db, "posts"), orderBy("date", "desc"));
+            const querySnapshot = await getDocs(q);
             const postsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
             setPosts(postsData);
         } catch (error) {
@@ -73,6 +79,27 @@ export default function BlogManagementPage() {
             });
         }
     };
+    
+    const handleStatusChange = async (postId: string, newStatus: Post['status']) => {
+        try {
+            const postRef = doc(db, "posts", postId);
+            await updateDoc(postRef, { status: newStatus });
+            setPosts(prevPosts => 
+                prevPosts.map(p => p.id === postId ? { ...p, status: newStatus } : p)
+            );
+            toast({
+                title: <div className="flex items-center"><CheckCircle className="mr-2 text-green-500" /> อัปเดตสถานะสำเร็จ</div>,
+                description: `บทความถูกเปลี่ยนเป็น "${newStatus === 'published' ? 'เผยแพร่' : 'ฉบับร่าง'}"`,
+            });
+        } catch (error) {
+             console.error("Error updating status: ", error);
+            toast({
+                variant: "destructive",
+                title: "เกิดข้อผิดพลาด",
+                description: "ไม่สามารถอัปเดตสถานะได้",
+            });
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
@@ -105,8 +132,9 @@ export default function BlogManagementPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>หัวข้อ</TableHead>
-                                        <TableHead>Slug</TableHead>
-                                        <TableHead>วันที่เผยแพร่</TableHead>
+                                        <TableHead>วันที่</TableHead>
+                                        <TableHead>สถานะ</TableHead>
+                                        <TableHead>เผยแพร่</TableHead>
                                         <TableHead className="text-right">จัดการ</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -114,11 +142,28 @@ export default function BlogManagementPage() {
                                     {posts.map((post) => (
                                         <TableRow key={post.id}>
                                             <TableCell className="font-medium">{post.title}</TableCell>
-                                            <TableCell>{post.slug}</TableCell>
                                             <TableCell>{post.date}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={post.status === 'published' ? 'default' : 'secondary'} 
+                                                    className={cn(post.status === 'published' ? 'bg-green-500' : 'bg-gray-500', "text-white")}>
+                                                    {post.status === 'published' ? <><Eye className="mr-1 h-3 w-3"/> เผยแพร่</> : <><EyeOff className="mr-1 h-3 w-3"/> ฉบับร่าง</>}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                 <div className="flex items-center space-x-2">
+                                                    <Switch
+                                                        id={`status-${post.id}`}
+                                                        checked={post.status === 'published'}
+                                                        onCheckedChange={(checked) => handleStatusChange(post.id, checked ? 'published' : 'draft')}
+                                                    />
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="text-right space-x-2">
                                                 <Button variant="outline" size="sm" asChild>
-                                                    <Link href={`/admin/blog/edit/${post.id}`}>แก้ไข</Link>
+                                                    <Link href={`/admin/blog/edit/${post.id}`}>
+                                                        <Edit className="mr-1 h-3 w-3" />
+                                                        แก้ไข
+                                                    </Link>
                                                 </Button>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sparkles } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 
 interface PostData {
@@ -23,6 +25,7 @@ interface PostData {
     category: string;
     description: string;
     content: string;
+    status: 'published' | 'draft';
     metaTitle?: string;
     metaDescription?: string;
 }
@@ -72,6 +75,11 @@ export default function EditBlogPostPage() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setPost(prev => prev ? { ...prev, [name]: value } : null);
+    };
+
+     const handleStatusChange = (checked: boolean) => {
+        const newStatus = checked ? 'published' : 'draft';
+        setPost(prev => prev ? { ...prev, status: newStatus } : null);
     };
 
     const handleSubmit = async (e: FormEvent) => {
@@ -143,6 +151,10 @@ export default function EditBlogPostPage() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="flex items-center space-x-2">
+                                <Switch id="status" checked={post.status === 'published'} onCheckedChange={handleStatusChange} />
+                                <Label htmlFor="status">{post.status === 'published' ? 'เผยแพร่แล้ว' : 'ฉบับร่าง'}</Label>
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="title">หัวข้อเรื่อง *</Label>
                                 <Input id="title" name="title" value={post.title} onChange={handleInputChange} required />

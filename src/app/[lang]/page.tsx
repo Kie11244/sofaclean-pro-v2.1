@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, limit, DocumentData, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, where, DocumentData, doc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +42,12 @@ type Props = {
 };
 
 async function getRecentPosts(): Promise<Post[]> {
-    const postsCol = query(collection(db, 'posts'), orderBy('date', 'desc'), limit(3));
+    const postsCol = query(
+        collection(db, 'posts'), 
+        where('status', '==', 'published'),
+        orderBy('date', 'desc'), 
+        limit(3)
+    );
     const postSnapshot = await getDocs(postsCol);
     const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
     return postList;
