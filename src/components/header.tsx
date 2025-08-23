@@ -16,21 +16,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 
-interface HeaderProps {
-    dictionary: Awaited<ReturnType<typeof getDictionary>>;
-    lang: 'th' | 'en';
-}
-
-
-export function Header({ dictionary, lang }: HeaderProps) {
+export function Header() {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const pathname = usePathname();
-    
-    const navLinks = dictionary.navigation.links;
+    const [dictionary, setDictionary] = useState<Awaited<ReturnType<typeof getDictionary>> | null>(null);
 
-    // We check if the current path is the root for the current language
-    const isHomePage = pathname === `/${lang}` || pathname === '/';
+    const lang = (pathname.split('/')[1] || 'th') as 'en' | 'th';
+
+    useEffect(() => {
+        const fetchDict = async () => {
+            const getDictionaryModule = await import('@/lib/dictionaries');
+            const dict = await getDictionaryModule.getDictionary(lang);
+            setDictionary(dict);
+        };
+        fetchDict();
+    }, [lang]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -40,9 +41,8 @@ export function Header({ dictionary, lang }: HeaderProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const isTransparent = isHomePage && !isScrolled && !isOpen;
+    const isTransparent = (pathname === `/${lang}` || pathname === '/') && !isScrolled && !isOpen;
 
-    // Function to generate a link for the other language
     const getLanguageSwitchPath = (currentPath: string, newLang: 'th' | 'en') => {
         const currentLang = currentPath.split('/')[1];
         if (currentLang === 'th' || currentLang === 'en') {
@@ -50,6 +50,8 @@ export function Header({ dictionary, lang }: HeaderProps) {
         }
         return `/${newLang}${currentPath}`;
     }
+    
+    if (!dictionary) return null; // or a loading skeleton
 
     return (
         <header className={cn(
@@ -66,8 +68,8 @@ export function Header({ dictionary, lang }: HeaderProps) {
 
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center space-x-6">
-                        {navLinks && navLinks.map((link: { href: string; label: string; }) => (
-                            <Link key={link.href} href={`/${lang}${link.href.substring(1)}`} className="font-medium hover:text-emerald-500 transition-colors">
+                        {dictionary.navigation.links && dictionary.navigation.links.map((link: { href: string; label: string; }) => (
+                            <Link key={link.href} href={link.href.startsWith('/#') ? `/${lang}${link.href.substring(1)}` : `/${lang}${link.href.substring(1)}`} className="font-medium hover:text-emerald-500 transition-colors">
                                 {link.label}
                             </Link>
                         ))}
@@ -122,8 +124,8 @@ export function Header({ dictionary, lang }: HeaderProps) {
                 isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
             )}>
                 <nav className="flex flex-col items-center p-6 space-y-4">
-                     {navLinks && navLinks.map((link: { href: string; label: string; }) => (
-                        <Link key={link.href} href={`/${lang}${link.href.substring(1)}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
+                     {dictionary.navigation.links && dictionary.navigation.links.map((link: { href: string; label: string; }) => (
+                        <Link key={link.href} href={link.href.startsWith('/#') ? `/${lang}${link.href.substring(1)}` : `/${lang}${link.href.substring(1)}`} className="font-medium text-lg hover:text-emerald-500 transition-colors" onClick={() => setIsOpen(false)}>
                             {link.label}
                         </Link>
                     ))}
