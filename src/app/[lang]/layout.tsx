@@ -4,6 +4,9 @@ import { FloatingContact } from '@/components/floating-contact';
 import { Header } from '@/components/header';
 import { getDictionary } from '@/lib/dictionaries';
 import { Kanit } from 'next/font/google';
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from '@/contexts/auth-context';
+
 
 type Props = {
     params: { lang: 'en' | 'th' };
@@ -31,7 +34,7 @@ export async function generateStaticParams() {
     return [{ lang: 'en' }, { lang: 'th' }];
 }
 
-export default async function LangLayout({
+export default async function RootLayout({
   children,
   params: { lang },
 }: Readonly<{
@@ -40,10 +43,15 @@ export default async function LangLayout({
 }>) {
     const dict = await getDictionary(lang);
   return (
-    <div className={kanit.variable}>
-        <Header dictionary={dict} lang={lang} />
-        <main>{children}</main>
-        <FloatingContact />
-    </div>
+    <html lang={lang} className={kanit.variable} suppressHydrationWarning>
+        <body className="font-body antialiased">
+            <AuthProvider>
+                <Header dictionary={dict} lang={lang} />
+                <main>{children}</main>
+                <FloatingContact />
+                <Toaster />
+            </AuthProvider>
+        </body>
+    </html>
   );
 }
