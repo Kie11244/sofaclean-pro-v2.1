@@ -99,7 +99,7 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=th`);
                     const data = await response.json();
                     if (data && data.display_name) {
                         setAddress(data.display_name);
