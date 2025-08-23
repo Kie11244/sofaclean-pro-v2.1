@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, limit, where, DocumentData, doc, getDoc } from 'firebase/firestore';
+import type { Metadata } from 'next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +41,39 @@ interface ContactSettings {
 type Props = {
   params: { lang: 'en' | 'th' };
 };
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://psychic-glider-453312-k0.firebaseapp.com';
+
+export async function generateMetadata({ params: { lang } }: Props): Promise<Metadata> {
+    const dict = await getDictionary(lang);
+    const canonicalUrl = `${SITE_URL}/${lang}`;
+    
+    const metadataTranslations = {
+        en: {
+            title: "SofaClean Pro | Sofa, Curtain & Car Seat Cleaning Services",
+            description: "Professional on-site cleaning for sofas, curtains, car seats, carpets, and mattresses in Bangkok. We remove stains, dust mites, and odors.",
+        },
+        th: {
+            title: "SofaClean Pro | บริการซักโซฟา ซักเบาะรถยนต์ ซักม่าน",
+            description: "บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ซักม่าน และที่นอนครบวงจร พร้อมบริการถึงบ้านและคอนโดในเขตกรุงเทพและปริมณฑล",
+        }
+    };
+    
+    const selectedMeta = metadataTranslations[lang];
+
+    return {
+        title: selectedMeta.title,
+        description: selectedMeta.description,
+        alternates: {
+            canonical: canonicalUrl,
+            languages: {
+                'en-US': `${SITE_URL}/en`,
+                'th-TH': `${SITE_URL}/th`,
+            },
+        },
+    };
+}
+
 
 async function getRecentPosts(): Promise<Post[]> {
     const postsCol = query(
@@ -101,8 +135,8 @@ export default async function Home({ params: { lang } }: Props) {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "SofaClean Pro",
-    "url": "https://your-website-url.com",
-    "logo": "https://your-website-url.com/logo.png",
+    "url": SITE_URL,
+    "logo": `${SITE_URL}/logo.png`,
     "contactPoint": {
         "@type": "ContactPoint",
         "telephone": `+${contactSettings.phone.replace(/^0/, '66-')}`,

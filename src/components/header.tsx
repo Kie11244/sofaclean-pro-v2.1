@@ -62,7 +62,7 @@ export function Header() {
                 <div className="flex items-center justify-between h-20">
                     <div className="text-2xl font-bold">
                         <Link href={`/${lang}`} className={cn(isTransparent ? "text-white" : "text-emerald-600")}>
-                            Clean & Care
+                            SofaClean Pro
                         </Link>
                     </div>
 
