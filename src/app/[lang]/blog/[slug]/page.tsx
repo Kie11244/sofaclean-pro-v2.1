@@ -32,6 +32,8 @@ type Props = {
     params: { lang: 'en' | 'th', slug: string };
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://psychic-glider-453312-k0.firebaseapp.com';
+
 // This tells Next.js to re-fetch the data on every request.
 export const dynamic = 'force-dynamic';
 
@@ -60,28 +62,36 @@ async function getPost(slug: string): Promise<Post | null> {
 async function getRelatedPosts(currentPostId: string): Promise<Post[]> {
     const q = query(
         collection(db, "posts"),
-        where("status", "==", "published"),
         orderBy("date", "desc"),
-        limit(5) // Fetch a few more to filter out the current one
     );
     const snapshot = await getDocs(q);
-    const allRecentPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
-    // Filter out the current post and take the next 2
-    return allRecentPosts.filter(p => p.id !== currentPostId).slice(0, 2);
+    const allRecentPosts = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Post))
+        .filter(p => p.status === 'published' && p.id !== currentPostId)
+        .slice(0, 2);
+    return allRecentPosts;
 }
 
 
-export async function generateMetadata({ params: { slug } }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: { slug, lang } }: Props): Promise<Metadata> {
     const post = await getPost(decodeURIComponent(slug));
     if (!post) {
         return {};
     }
     const metaTitle = post.metaTitle || post.title;
     const metaDescription = post.metaDescription || post.description;
+    const canonicalUrl = `${SITE_URL}/${lang}/blog/${encodeURIComponent(post.slug)}`;
 
     return {
         title: `${metaTitle} | SofaClean Pro`,
         description: metaDescription,
+        alternates: {
+            canonical: canonicalUrl,
+            languages: {
+                'en-US': `${SITE_URL}/en/blog/${encodeURIComponent(post.slug)}`,
+                'th-TH': `${SITE_URL}/th/blog/${encodeURIComponent(post.slug)}`,
+            },
+        },
     };
 }
 
@@ -150,7 +160,7 @@ export default async function BlogPostPage({ params: { slug, lang } }: Props) {
                     src={post.image}
                     alt={post.title}
                     width={1200}
-                    height={600}
+                    height={675}
                     data-ai-hint={post.imageHint}
                     priority
                 />
@@ -177,7 +187,7 @@ export default async function BlogPostPage({ params: { slug, lang } }: Props) {
                             return (
                              <Card key={related.id} className="overflow-hidden transition-shadow hover:shadow-md">
                                 <Link href={relatedUrl} className="block">
-                                    <Image className="w-full h-32 object-cover" src={related.image} alt={related.title} width={300} height={150} data-ai-hint={related.imageHint} />
+                                    <Image className="w-full h-32 object-cover" src={related.image} alt={related.title} width={300} height={169} data-ai-hint={related.imageHint} />
                                     <CardContent className="p-4">
                                         <h4 className="font-bold text-base leading-tight hover:text-emerald-600">{related.title}</h4>
                                     </CardContent>

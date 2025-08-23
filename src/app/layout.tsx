@@ -1,13 +1,9 @@
 
-"use client";
-
-import { usePathname } from 'next/navigation';
+import type { Metadata } from 'next'
 import './globals.css';
-import { FloatingContact } from '@/components/floating-contact';
-import { Header } from '@/components/header';
 import { Kanit } from 'next/font/google';
-import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/auth-context';
+import { SiteLayout } from '@/components/site-layout';
 
 
 const kanit = Kanit({
@@ -16,23 +12,25 @@ const kanit = Kanit({
   variable: '--font-kanit',
 });
 
+// This is the default metadata for all pages
+export const metadata: Metadata = {
+  title: 'SofaClean Pro | บริการซักโซฟา ซักเบาะรถยนต์',
+  description: 'บริการซักโซฟา ซักเบาะรถยนต์ ซักพรม ซักม่าน และที่นอนครบวงจร พร้อมบริการถึงบ้านและคอนโดในเขตกรุงเทพและปริมณฑล',
+}
+
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isAdminPage = pathname.startsWith('/admin');
-
   return (
     <html lang="th" className={kanit.variable} suppressHydrationWarning>
         <body className="font-body antialiased">
             <AuthProvider>
-                {!isAdminPage && <Header />}
-                <main>{children}</main>
-                {!isAdminPage && <FloatingContact />}
-                <Toaster />
+                <SiteLayout>
+                    {children}
+                </SiteLayout>
             </AuthProvider>
         </body>
     </html>

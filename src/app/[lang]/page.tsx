@@ -1,5 +1,4 @@
 
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, ShieldCheck, MapPin, Phone, Newspaper, Check } from 'lucide-react';
@@ -224,7 +223,7 @@ export default async function Home({ params: { lang } }: Props) {
                     <Card className="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 h-full flex flex-col group">
                         <Link href={postUrl} className="block">
                         <div className="overflow-hidden">
-                            <Image className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={post.image} alt={post.title} width={600} height={400} data-ai-hint={post.imageHint} />
+                            <Image className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src={post.image} alt={post.title} width={600} height={338} data-ai-hint={post.imageHint} />
                         </div>
                         </Link>
                         <CardContent className="p-6 flex flex-col flex-grow">
@@ -353,5 +352,3 @@ export default async function Home({ params: { lang } }: Props) {
     </>
   );
 }
-
-    

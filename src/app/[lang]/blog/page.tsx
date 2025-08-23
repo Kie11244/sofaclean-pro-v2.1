@@ -25,11 +25,22 @@ interface Post extends DocumentData {
     status: 'published' | 'draft';
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://psychic-glider-453312-k0.firebaseapp.com';
+
 export async function generateMetadata({ params: { lang } }: Props): Promise<Metadata> {
     const dict = await getDictionary(lang);
+    const canonicalUrl = `${SITE_URL}/${lang}/blog`;
+
     return {
         title: dict.blogIndex.title,
         description: dict.blogIndex.description,
+        alternates: {
+            canonical: canonicalUrl,
+            languages: {
+                'en-US': `${SITE_URL}/en/blog`,
+                'th-TH': `${SITE_URL}/th/blog`,
+            },
+        },
     };
 }
 
@@ -80,7 +91,7 @@ export default async function BlogIndexPage({ params: { lang } }: Props) {
                                             src={post.image}
                                             alt={post.title}
                                             width={600}
-                                            height={400}
+                                            height={320}
                                             data-ai-hint={post.imageHint}
                                             priority={index === 0}
                                         />
@@ -123,5 +134,3 @@ export default async function BlogIndexPage({ params: { lang } }: Props) {
     </div>
   );
 }
-
-    
