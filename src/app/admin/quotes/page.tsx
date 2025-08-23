@@ -352,5 +352,5 @@ export default function QuotesListPage() {
             </Dialog>
         </>
     );
-
+}
     
