@@ -75,6 +75,7 @@ export default async function BlogIndexPage({ params: { lang } }: Props) {
                                             width={600}
                                             height={400}
                                             data-ai-hint={post.imageHint}
+                                            priority={index === 0}
                                         />
                                     </div>
                                 </Link>
@@ -115,5 +116,3 @@ export default async function BlogIndexPage({ params: { lang } }: Props) {
     </div>
   );
 }
-
-    
