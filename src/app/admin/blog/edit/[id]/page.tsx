@@ -162,7 +162,17 @@ export default function EditBlogPostPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="content">เนื้อหาบทความ (HTML) *</Label>
                                 <Textarea id="content" name="content" value={post.content} onChange={handleInputChange} rows={15} required />
-                                <p className="text-sm text-muted-foreground">คุณสามารถใช้แท็ก HTML เช่น &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt; ในการจัดรูปแบบ</p>
+                                <div className="text-xs text-muted-foreground bg-gray-100 p-3 rounded-md border">
+                                    <p className="font-semibold mb-2">คำแนะนำการใช้แท็ก HTML:</p>
+                                    <ul className="list-disc list-inside space-y-1">
+                                        <li><code>&lt;h2&gt;หัวข้อย่อย&lt;/h2&gt;</code> - สำหรับหัวข้อย่อยหลักในบทความ</li>
+                                        <li><code>&lt;h3&gt;หัวข้อย่อยรอง&lt;/h3&gt;</code> - สำหรับหัวข้อย่อยที่อยู่ภายใต้ h2</li>
+                                        <li><code>&lt;p&gt;ย่อหน้า...&lt;/p&gt;</code> - สำหรับเนื้อหาแต่ละย่อหน้า</li>
+                                        <li><code>&lt;strong&gt;ตัวหนา&lt;/strong&gt;</code> - สำหรับเน้นข้อความสำคัญ</li>
+                                        <li><code>&lt;ul&gt;&lt;li&gt;รายการ&lt;/li&gt;&lt;/ul&gt;</code> - สำหรับรายการแบบไม่มีลำดับ (จุด)</li>
+                                        <li><code>&lt;ol&gt;&lt;li&gt;รายการ&lt;/li&gt;&lt;/ol&gt;</code> - สำหรับรายการแบบมีลำดับ (ตัวเลข)</li>
+                                    </ul>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="image">URL รูปภาพหลัก</Label>
