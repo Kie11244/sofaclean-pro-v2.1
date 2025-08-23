@@ -6,20 +6,23 @@ import {NextResponse} from 'next/server';
 interface Post extends DocumentData {
     slug: string;
     date: string;
+    status: 'published' | 'draft';
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://psychic-glider-453312-k0.firebaseapp.com';
 
 export async function GET() {
     const postsQuery = query(
-        collection(db, 'posts'), 
-        where('status', '==', 'published'),
+        collection(db, 'posts'),
         orderBy('date', 'desc')
     );
     const postsSnapshot = await getDocs(postsQuery);
-    const posts: Post[] = postsSnapshot.docs.map(doc => doc.data() as Post);
+    const allPosts: Post[] = postsSnapshot.docs.map(doc => doc.data() as Post);
 
-    const blogPostUrls = posts.flatMap(post => {
+    // Filter for published posts in code
+    const publishedPosts = allPosts.filter(post => post.status === 'published');
+
+    const blogPostUrls = publishedPosts.flatMap(post => {
         return ['en', 'th'].map(lang => {
             return `
         <url>
@@ -56,3 +59,5 @@ export async function GET() {
 
     return response;
 }
+
+    

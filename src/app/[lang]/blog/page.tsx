@@ -22,6 +22,7 @@ interface Post extends DocumentData {
     date: string;
     category: string;
     description: string;
+    status: 'published' | 'draft';
 }
 
 export async function generateMetadata({ params: { lang } }: Props): Promise<Metadata> {
@@ -38,12 +39,14 @@ export const dynamic = 'force-dynamic';
 
 async function getPosts(): Promise<Post[]> {
     const postsCol = query(
-        collection(db, 'posts'), 
-        where('status', '==', 'published'),
+        collection(db, 'posts'),
         orderBy('date', 'desc')
     );
     const postSnapshot = await getDocs(postsCol);
-    const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+    // Filter for published posts in code
+    const postList = postSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Post))
+        .filter(post => post.status === 'published');
     return postList;
 }
 
@@ -120,3 +123,5 @@ export default async function BlogIndexPage({ params: { lang } }: Props) {
     </div>
   );
 }
+
+    

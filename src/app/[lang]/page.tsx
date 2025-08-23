@@ -23,6 +23,7 @@ interface Post extends DocumentData {
     date: string;
     category: string;
     description: string;
+    status: 'published' | 'draft';
 }
 
 interface HomePageData {
@@ -43,13 +44,15 @@ type Props = {
 
 async function getRecentPosts(): Promise<Post[]> {
     const postsCol = query(
-        collection(db, 'posts'), 
-        where('status', '==', 'published'),
-        orderBy('date', 'desc'), 
-        limit(3)
+        collection(db, 'posts'),
+        orderBy('date', 'desc')
     );
     const postSnapshot = await getDocs(postsCol);
-    const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+    // Filter for published posts in code
+    const postList = postSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Post))
+        .filter(post => post.status === 'published')
+        .slice(0, 3);
     return postList;
 }
 
@@ -350,3 +353,5 @@ export default async function Home({ params: { lang } }: Props) {
     </>
   );
 }
+
+    
