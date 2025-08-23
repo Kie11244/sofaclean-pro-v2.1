@@ -72,7 +72,7 @@ async function getRelatedPosts(currentPostId: string): Promise<Post[]> {
 
 
 export async function generateMetadata({ params: { slug } }: Props): Promise<Metadata> {
-    const post = await getPost(slug);
+    const post = await getPost(decodeURIComponent(slug));
     if (!post) {
         return {};
     }
