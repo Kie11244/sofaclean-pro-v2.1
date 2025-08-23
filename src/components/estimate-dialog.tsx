@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Loader2, Paperclip, XCircle } from 'lucide-react';
+import { MapPin, Loader2, Paperclip, XCircle, Search } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import imageCompression from 'browser-image-compression';
@@ -223,25 +223,29 @@ export function EstimateDialog({ children }: EstimateDialogProps) {
                         <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="เช่น 0812345678" />
                     </div>
                      <div className="grid gap-2">
-                        <div className="flex items-center justify-between">
-                             <Label htmlFor="address">ที่อยู่ (ถ้ามี)</Label>
-                             <Button variant="ghost" size="sm" onClick={handleFetchLocation} disabled={isFetchingLocation}>
+                        <Label htmlFor="address">ที่อยู่สำหรับเข้ารับบริการ (ถ้ามี)</Label>
+                        <Textarea 
+                            id="address" 
+                            value={address} 
+                            onChange={(e) => setAddress(e.target.value)} 
+                            placeholder={isFetchingLocation ? "กำลังดึงตำแหน่งปัจจุบัน..." : "กรอกที่อยู่ หรือใช้ปุ่มด้านล่าง"} 
+                            rows={2}
+                            disabled={isFetchingLocation}
+                        />
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                             <Button variant="default" onClick={handleFetchLocation} disabled={isFetchingLocation}>
                                 {isFetchingLocation ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
                                     <MapPin className="mr-2 h-4 w-4" />
                                 )}
-                                 ใช้ที่อยู่ปัจจุบัน
+                                 ค้นหาตำแหน่งอัตโนมัติ
+                             </Button>
+                              <Button variant="outline" onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=ค้นหาและคัดลอกที่อยู่ของคุณที่นี่', '_blank')}>
+                                 <Search className="mr-2 h-4 w-4" />
+                                 ค้นหาจาก Google Maps
                              </Button>
                         </div>
-                        <Textarea 
-                            id="address" 
-                            value={address} 
-                            onChange={(e) => setAddress(e.target.value)} 
-                            placeholder={isFetchingLocation ? "กำลังดึงตำแหน่งปัจจุบัน..." : "ที่อยู่สำหรับเข้ารับบริการ"} 
-                            rows={2}
-                            disabled={isFetchingLocation}
-                        />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="description">รายละเอียดงาน <span className="text-red-500">*</span></Label>
