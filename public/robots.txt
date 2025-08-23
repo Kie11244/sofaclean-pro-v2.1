@@ -1,0 +1,6 @@
+# Allow all crawlers to access the site
+User-agent: *
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://psychic-glider-453312-k0.firebaseapp.com/sitemap.xml

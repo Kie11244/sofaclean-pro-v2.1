@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  env: {
+    NEXT_PUBLIC_SITE_URL: process.env.NODE_ENV === 'development'
+      ? 'http://localhost:9002'
+      : 'https://psychic-glider-453312-k0.firebaseapp.com',
+  }
 };
 
 export default nextConfig;
