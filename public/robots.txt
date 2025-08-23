@@ -1,6 +1,8 @@
-# Allow all crawlers to access the site
+# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+#
+# Allow crawling of all content
 User-agent: *
 Disallow: /admin/
+Allow: /
 
-# Sitemap location
-Sitemap: https://psychic-glider-453312-k0.firebaseapp.com/sitemap.xml
+Sitemap: /sitemap.xml
