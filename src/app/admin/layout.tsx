@@ -19,6 +19,6 @@ export default function AdminLayout({
     }
   }, [user, loading, router]);
 
-  // Add padding-top to push content below the fixed header
-  return <div className="pt-24">{children}</div>;
+  // Remove padding-top to allow content to fill the screen on mobile.
+  return <div>{children}</div>;
 }
