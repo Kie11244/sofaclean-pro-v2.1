@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
 
-/** ตั้งโดเมนหลัก 55(ถ้าไม่ตั้ง env จะ fallback เป็น vercel app) */
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sofaclean-pro-v2.vercel.app")
-    .replace(/\/+$/, ""); // ตัด / ท้าย
+/** โดเมนหลัก: ใช้จาก ENV ก่อนเสมอ ตัด / ท้ายออก */
+const RAW_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://sofaclean-pro-v2.vercel.app";
+const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
-/** Static URLs หลัก */
-const staticPaths = [
-  { loc: "/",               changefreq: "daily",   priority: "1.0" },
-  { loc: "/en",             changefreq: "daily",   priority: "1.0" },
-  { loc: "/en/blog",        changefreq: "weekly",  priority: "0.9" },
-  { loc: "/th",             changefreq: "daily",   priority: "1.0" },
-  { loc: "/th/blog",        changefreq: "weekly",  priority: "0.9" },
+/** หน้า static หลัก */
+const staticPaths: Array<{ loc: string; changefreq: string; priority: string }> = [
+  { loc: "/",        changefreq: "daily",  priority: "1.0" },
+  { loc: "/en",      changefreq: "daily",  priority: "1.0" },
+  { loc: "/en/blog", changefreq: "weekly", priority: "0.9" },
+  { loc: "/th",      changefreq: "daily",  priority: "1.0" },
+  { loc: "/th/blog", changefreq: "weekly", priority: "0.9" },
 ];
 
-/** ดึงรายการ dynamic (ตัวอย่าง) — เปลี่ยนเป็น fetch จาก DB/CMS ได้ */
+/** ตัวอย่าง dynamic (ปรับเป็น fetch DB/CMS ได้) */
 async function getDynamicEntries() {
   const posts = [
     { slug: "/en/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
@@ -27,7 +27,7 @@ async function getDynamicEntries() {
     },
   ];
 
-  return posts.map((p) => ({
+  return posts.map(p => ({
     loc: `${SITE_URL}${p.slug}`,
     lastmod: new Date(p.lastmod).toISOString(),
     changefreq: "monthly",
@@ -35,17 +35,21 @@ async function getDynamicEntries() {
   }));
 }
 
-/** สร้าง XML body */
-function buildXml(items: Array<{
-  loc: string; changefreq: string; priority: string; lastmod?: string;
-}>) {
-  const urls = items.map(i => `
+/** ประกอบ XML */
+function buildXml(
+  items: Array<{ loc: string; changefreq: string; priority: string; lastmod?: string }>
+) {
+  const urls = items
+    .map(
+      (i) => `
   <url>
     <loc>${i.loc}</loc>
     ${i.lastmod ? `<lastmod>${i.lastmod}</lastmod>` : ""}
     <changefreq>${i.changefreq}</changefreq>
     <priority>${i.priority}</priority>
-  </url>`).join("");
+  </url>`
+    )
+    .join("");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -53,15 +57,11 @@ ${urls}
 </urlset>`;
 }
 
-/** Handler: GET /sitemap.xml */
+/** GET /sitemap.xml */
 export async function GET() {
-  // รวม static + dynamic
   const dynamic = await getDynamicEntries();
   const all = [
-    ...staticPaths.map(p => ({
-      ...p,
-      loc: `${SITE_URL}${p.loc}`,
-    })),
+    ...staticPaths.map(p => ({ ...p, loc: `${SITE_URL}${p.loc}` })),
     ...dynamic,
   ];
 
@@ -71,7 +71,8 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      // กันแคชชั่วคราว เพื่อเคลียร์ของเก่า; ถ้าทุกอย่าง OK แล้วค่อยเปลี่ยนเป็น s-maxage ได้
+      "Cache-Control": "no-store, max-age=0",
     },
   });
 }
