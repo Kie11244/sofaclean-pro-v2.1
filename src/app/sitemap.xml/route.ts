@@ -14,9 +14,8 @@ const staticPaths = [
   { loc: "/th/blog", changefreq: "weekly",  priority: "0.9" },
 ] as const;
 
-/** ตัวอย่าง: ดึงโพสต์/เพจแบบไดนามิก (แทนที่ด้วยการดึงจาก DB, CMS, หรือไฟล์ได้) */
+/** ดึงโพสต์ไดนามิก (ตัวอย่าง) */
 async function getDynamicEntries() {
-  // TODO: แทนที่ด้วยการ fetch จริงของโปรเจกต์คุณ
   const posts = [
     { path: "/en/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
     { path: "/th/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
@@ -24,8 +23,6 @@ async function getDynamicEntries() {
     { path: "/th/blog/when-to-clean-car-seats", lastmod: "2024-07-18" },
     { path: "/en/blog/sofa-vs-carpet-cleaning-difference", lastmod: "2024-07-15" },
     { path: "/th/blog/sofa-vs-carpet-cleaning-difference", lastmod: "2024-07-15" },
-
-    // ตัวอย่าง slug ภาษาไทย
     {
       path: "/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
       lastmod: "2025-08-13",
@@ -52,7 +49,6 @@ function normalizePath(path: string) {
     return encodeURI(path);
   }
 }
-
 function toAbsoluteUrl(path: string) {
   const clean = normalizePath(path.startsWith("/") ? path : `/${path}`);
   return `${SITE_URL}${clean}`;
@@ -64,25 +60,23 @@ function buildXml(items: Array<{
   priority: string | number;
   lastmod?: string;
 }>) {
-  const urls = items
-    .map(
-      (i) => `
+  const urls = items.map((i) => `
   <url>
     <loc>${i.loc}</loc>
     ${i.lastmod ? `<lastmod>${i.lastmod}</lastmod>` : ""}
     <changefreq>${i.changefreq}</changefreq>
     <priority>${i.priority}</priority>
-  </url>`
-    )
-    .join("");
+  </url>`).join("");
+
+  const generatedAt = new Date().toISOString(); // สำหรับเช็กว่าไฟล์ใหม่จริง
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
+  <!-- generated: ${generatedAt} -->
 </urlset>`;
 }
 
 export async function GET() {
-  // รวม static + dynamic
   const dynamic = await getDynamicEntries();
 
   const all = [
@@ -97,18 +91,20 @@ export async function GET() {
     })),
   ];
 
-  // ลบ URL ซ้ำ (เผื่อมาจากหลายแหล่ง)
   const deduped = Array.from(new Map(all.map((u) => [u.loc, u])).values());
 
   const xml = buildXml(deduped);
+  const now = new Date().toISOString();
 
   return new NextResponse(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      // ปิด cache ทั้ง CDN และเบราว์เซอร์ เพื่อให้เห็นผลทันทีหลัง deploy
+      // ปิด cache เพื่อให้เห็นผลทันที
       "Cache-Control": "no-cache, no-store, must-revalidate",
       "Pragma": "no-cache",
       "Expires": "0",
+      // debug header ไว้เช็กว่า response มาสด ๆ
+      "X-Sitemap-Generated-At": now,
     },
   });
 }
