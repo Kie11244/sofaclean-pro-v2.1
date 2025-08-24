@@ -27,7 +27,7 @@ async function getDynamicEntries() {
     },
   ];
 
-  return posts.map(p => ({
+  return posts.map((p) => ({
     loc: `${SITE_URL}${p.slug}`,
     lastmod: new Date(p.lastmod).toISOString(),
     changefreq: "monthly",
@@ -61,7 +61,7 @@ ${urls}
 export async function GET() {
   const dynamic = await getDynamicEntries();
   const all = [
-    ...staticPaths.map(p => ({ ...p, loc: `${SITE_URL}${p.loc}` })),
+    ...staticPaths.map((p) => ({ ...p, loc: `${SITE_URL}${p.loc}` })),
     ...dynamic,
   ];
 
@@ -71,7 +71,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      // กันแคชชั่วคราว เพื่อเคลียร์ของเก่า; ถ้าทุกอย่าง OK แล้วค่อยเปลี่ยนเป็น s-maxage ได้
+      // ชั่วคราวกัน cache เพื่อเคลียร์ของเก่า; พอเรียบร้อยค่อยเปลี่ยนเป็น s-maxage ได้ 5555
       "Cache-Control": "no-store, max-age=0",
     },
   });
