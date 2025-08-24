@@ -8,7 +8,7 @@ interface Post extends DocumentData {
   status: 'published' | 'draft';
 }
 
-// ใช้โดเมนโปรดักชัน (Vercel) เป็นค่าเริ่มต้น และตัด / ท้ายออก
+// ใช้โดเมนโปรดักชัน (Vercel) เป็นค่าเริ่มต้น และตัด / ท้ายออก 55
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sofaclean-pro-v2.vercel.app').replace(/\/+$/, '');
 
 export async function GET() {
