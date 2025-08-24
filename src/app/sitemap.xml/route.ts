@@ -1,74 +1,117 @@
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+/** ตั้งค่าโดเมนหลักให้ชัดเจน */
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ||
+  "https://sofaclean-pro-v2.vercel.app";
 
-interface Post extends DocumentData {
-  slug: string;
-  date: string;              // ISO string หรือสตริงวันที่
-  status: 'published' | 'draft';
+/** หน้า static หลักของเว็บ */
+const staticPaths = [
+  { loc: "/",            changefreq: "daily",   priority: "1.0" },
+  { loc: "/en",          changefreq: "daily",   priority: "1.0" },
+  { loc: "/en/blog",     changefreq: "weekly",  priority: "0.9" },
+  { loc: "/th",          changefreq: "daily",   priority: "1.0" },
+  { loc: "/th/blog",     changefreq: "weekly",  priority: "0.9" },
+] as const;
+
+/** ตัวอย่าง: ดึงโพสต์/เพจแบบไดนามิก (แทนที่ด้วยการดึงจาก DB, CMS, หรือไฟล์ได้) */
+async function getDynamicEntries() {
+  // TODO: แทนที่ด้วยการ fetch จริงของโปรเจกต์คุณ
+  // ตัวอย่าง slug ที่มีทั้ง EN/TH
+  const posts = [
+    { path: "/en/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
+    { path: "/th/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
+    { path: "/en/blog/when-to-clean-car-seats", lastmod: "2024-07-18" },
+    { path: "/th/blog/when-to-clean-car-seats", lastmod: "2024-07-18" },
+    { path: "/en/blog/sofa-vs-carpet-cleaning-difference", lastmod: "2024-07-15" },
+    { path: "/th/blog/sofa-vs-carpet-cleaning-difference", lastmod: "2024-07-15" },
+
+    // ตัวอย่าง slug ภาษาไทย (หลีกเลี่ยง percent-encoding ยาวด้วยการ normalize)
+    {
+      path:
+        "/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
+      lastmod: "2025-08-13",
+    },
+    {
+      path:
+        "/en/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
+      lastmod: "2025-08-13",
+    },
+  ];
+
+  return posts.map(p => ({
+    loc: p.path,
+    changefreq: "monthly" as const,
+    priority: "0.8",
+    lastmod: new Date(p.lastmod + "T00:00:00Z").toISOString(),
+  }));
 }
 
-// ฮาร์ดโค้ดโดเมนชั่วคราวเพื่อกัน ENV เก่าทับ
-const SITE_URL = 'https://sofaclean-pro-v2.vercel.app';
+/** ป้องกัน URL ซ้ำ + แก้ percent-encoding ให้พอดี (ไม่ double-encode) */
+function normalizePath(path: string) {
+  try {
+    return encodeURI(decodeURI(path));
+  } catch {
+    return encodeURI(path);
+  }
+}
 
-export async function GET() {
-  // ดึงโพสต์เรียงตามวันที่
-  const postsQuery = query(collection(db, 'posts'), orderBy('date', 'desc'));
-  const postsSnapshot = await getDocs(postsQuery);
-  const allPosts: Post[] = postsSnapshot.docs.map((doc) => doc.data() as Post);
+function toAbsoluteUrl(path: string) {
+  const clean = normalizePath(path.startsWith("/") ? path : `/${path}`);
+  return `${SITE_URL}${clean}`;
+}
 
-  // เอาเฉพาะที่เผยแพร่แล้ว
-  const publishedPosts = allPosts.filter((post) => post.status === 'published');
-
-  // ถ้ามี 2 ภาษาเป็น /en และ /th ให้คงไว้
-  // ถ้าไทยอยู่ที่ "/" ให้เปลี่ยนเป็น ['en'] แล้วเพิ่มรายการของ '/' เองได้
-  const LANGS = ['en', 'th'];
-
-  const blogPostUrls = publishedPosts
-    .flatMap((post) =>
-      LANGS.map((lang) => {
-        return `
-  <url>
-    <loc>${`${SITE_URL}/${lang}/blog/${encodeURIComponent(post.slug)}`}</loc>
-    <lastmod>${new Date(post.date).toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-      })
-    )
-    .join('');
-
-  const staticUrls = LANGS
-    .flatMap((lang) => [
-      { url: `${SITE_URL}/${lang}`, changefreq: 'daily', priority: 1.0 },
-      { url: `${SITE_URL}/${lang}/blog`, changefreq: 'weekly', priority: 0.9 },
-    ])
+function buildXml(items: Array<{
+  loc: string;
+  changefreq: string;
+  priority: string | number;
+  lastmod?: string;
+}>) {
+  const urls = items
     .map(
-      ({ url, changefreq, priority }) => `
+      i => `
   <url>
-    <loc>${url}</loc>
-    <changefreq>${changefreq}</changefreq>
-    <priority>${priority}</priority>
+    <loc>${i.loc}</loc>
+    ${i.lastmod ? `<lastmod>${i.lastmod}</lastmod>` : ""}
+    <changefreq>${i.changefreq}</changefreq>
+    <priority>${i.priority}</priority>
   </url>`
     )
-    .join('');
+    .join("");
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${staticUrls}
-  ${blogPostUrls}
-  <!-- ${SITE_URL} -->
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
+}
 
-  return new NextResponse(sitemap, {
-    status: 200,
+export async function GET() {
+  // รวม static + dynamic
+  const dynamic = await getDynamicEntries();
+
+  const all = [
+    ...staticPaths.map(s => ({
+      loc: toAbsoluteUrl(s.loc),
+      changefreq: s.changefreq,
+      priority: s.priority,
+    })),
+    ...dynamic.map(d => ({
+      ...d,
+      loc: toAbsoluteUrl(d.loc),
+    })),
+  ];
+
+  // ลบ URL ซ้ำ (เผื่อมาจากหลายแหล่ง)
+  const deduped = Array.from(
+    new Map(all.map(u => [u.loc, u])).values()
+  );
+
+  const xml = buildXml(deduped);
+
+  return new NextResponse(xml, {
     headers: {
-      'Content-Type': 'application/xml; charset=UTF-8',
-      // ปิดแคชชั่วคราวเพื่อให้เห็นผลทันที
-      'Cache-Control': 'no-store',
+      "Content-Type": "application/xml; charset=utf-8",
+      // cache ฝั่ง CDN 6 ชั่วโมง (ปรับได้)
+      "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400",
     },
   });
 }
