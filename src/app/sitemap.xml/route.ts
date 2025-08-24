@@ -7,17 +7,16 @@ const SITE_URL =
 
 /** หน้า static หลักของเว็บ */
 const staticPaths = [
-  { loc: "/",            changefreq: "daily",   priority: "1.0" },
-  { loc: "/en",          changefreq: "daily",   priority: "1.0" },
-  { loc: "/en/blog",     changefreq: "weekly",  priority: "0.9" },
-  { loc: "/th",          changefreq: "daily",   priority: "1.0" },
-  { loc: "/th/blog",     changefreq: "weekly",  priority: "0.9" },
+  { loc: "/",        changefreq: "daily",   priority: "1.0" },
+  { loc: "/en",      changefreq: "daily",   priority: "1.0" },
+  { loc: "/en/blog", changefreq: "weekly",  priority: "0.9" },
+  { loc: "/th",      changefreq: "daily",   priority: "1.0" },
+  { loc: "/th/blog", changefreq: "weekly",  priority: "0.9" },
 ] as const;
 
 /** ตัวอย่าง: ดึงโพสต์/เพจแบบไดนามิก (แทนที่ด้วยการดึงจาก DB, CMS, หรือไฟล์ได้) */
 async function getDynamicEntries() {
   // TODO: แทนที่ด้วยการ fetch จริงของโปรเจกต์คุณ
-  // ตัวอย่าง slug ที่มีทั้ง EN/TH
   const posts = [
     { path: "/en/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
     { path: "/th/blog/how-to-clean-fabric-sofa", lastmod: "2024-07-21" },
@@ -26,20 +25,18 @@ async function getDynamicEntries() {
     { path: "/en/blog/sofa-vs-carpet-cleaning-difference", lastmod: "2024-07-15" },
     { path: "/th/blog/sofa-vs-carpet-cleaning-difference", lastmod: "2024-07-15" },
 
-    // ตัวอย่าง slug ภาษาไทย (หลีกเลี่ยง percent-encoding ยาวด้วยการ normalize)
+    // ตัวอย่าง slug ภาษาไทย
     {
-      path:
-        "/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
+      path: "/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
       lastmod: "2025-08-13",
     },
     {
-      path:
-        "/en/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
+      path: "/en/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่",
       lastmod: "2025-08-13",
     },
   ];
 
-  return posts.map(p => ({
+  return posts.map((p) => ({
     loc: p.path,
     changefreq: "monthly" as const,
     priority: "0.8",
@@ -69,7 +66,7 @@ function buildXml(items: Array<{
 }>) {
   const urls = items
     .map(
-      i => `
+      (i) => `
   <url>
     <loc>${i.loc}</loc>
     ${i.lastmod ? `<lastmod>${i.lastmod}</lastmod>` : ""}
@@ -89,29 +86,29 @@ export async function GET() {
   const dynamic = await getDynamicEntries();
 
   const all = [
-    ...staticPaths.map(s => ({
+    ...staticPaths.map((s) => ({
       loc: toAbsoluteUrl(s.loc),
       changefreq: s.changefreq,
       priority: s.priority,
     })),
-    ...dynamic.map(d => ({
+    ...dynamic.map((d) => ({
       ...d,
       loc: toAbsoluteUrl(d.loc),
     })),
   ];
 
   // ลบ URL ซ้ำ (เผื่อมาจากหลายแหล่ง)
-  const deduped = Array.from(
-    new Map(all.map(u => [u.loc, u])).values()
-  );
+  const deduped = Array.from(new Map(all.map((u) => [u.loc, u])).values());
 
   const xml = buildXml(deduped);
 
   return new NextResponse(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      // cache ฝั่ง CDN 6 ชั่วโมง (ปรับได้)
-      "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400",
+      // ปิด cache ทั้ง CDN และเบราว์เซอร์ เพื่อให้เห็นผลทันทีหลัง deploy
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0",
     },
   });
 }
