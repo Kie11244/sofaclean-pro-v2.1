@@ -2,26 +2,29 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface Post extends DocumentData {
   slug: string;
-  date: string; // ISO หรือสตริงวันที่
+  date: string;              // ISO string หรือสตริงวันที่
   status: 'published' | 'draft';
 }
 
-// ใช้โดเมนโปรดักชัน (Vercel) เป็นค่าเริ่มต้น และตัด / ท้ายออก 55
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sofaclean-pro-v2.vercel.app').replace(/\/+$/, '');
+// ฮาร์ดโค้ดโดเมนชั่วคราวเพื่อกัน ENV เก่าทับ
+const SITE_URL = 'https://sofaclean-pro-v2.vercel.app';
 
 export async function GET() {
-  // ดึงโพสต์เรียงตามวันที่ (คงเดิม)
+  // ดึงโพสต์เรียงตามวันที่
   const postsQuery = query(collection(db, 'posts'), orderBy('date', 'desc'));
   const postsSnapshot = await getDocs(postsQuery);
   const allPosts: Post[] = postsSnapshot.docs.map((doc) => doc.data() as Post);
 
-  // เอาเฉพาะที่เผยแพร่แล้ว (คงเดิม)
+  // เอาเฉพาะที่เผยแพร่แล้ว
   const publishedPosts = allPosts.filter((post) => post.status === 'published');
 
-  // ถ้าเว็บคุณมี 2 ภาษาเป็น /en และ /th ให้คงไว้
-  // ถ้า "ไทยอยู่ที่ /" ให้เปลี่ยนจาก ['en','th'] เป็น ['en'] แล้วเพิ่มรายการของ '/' ด้านล่างแทน
+  // ถ้ามี 2 ภาษาเป็น /en และ /th ให้คงไว้
+  // ถ้าไทยอยู่ที่ "/" ให้เปลี่ยนเป็น ['en'] แล้วเพิ่มรายการของ '/' เองได้
   const LANGS = ['en', 'th'];
 
   const blogPostUrls = publishedPosts
@@ -34,7 +37,7 @@ export async function GET() {
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>`;
-      }),
+      })
     )
     .join('');
 
@@ -49,18 +52,9 @@ export async function GET() {
     <loc>${url}</loc>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-  </url>`,
+  </url>`
     )
     .join('');
-
-  // ถ้า "ไทยอยู่ที่ /" ให้เพิ่มบล็อคนี้แทน /th:
-  // const homeTH = `
-  //   <url>
-  //     <loc>${SITE_URL}/</loc>
-  //     <changefreq>daily</changefreq>
-  //     <priority>1.0</priority>
-  //   </url>
-  // `;
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -73,8 +67,8 @@ export async function GET() {
     status: 200,
     headers: {
       'Content-Type': 'application/xml; charset=UTF-8',
-      // แคชบนเอจ 6 ชม. และให้เสิร์ฟแบบ stale ได้ 1 วัน
-      'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
+      // ปิดแคชชั่วคราวเพื่อให้เห็นผลทันที
+      'Cache-Control': 'no-store',
     },
   });
 }
