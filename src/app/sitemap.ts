@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
 const base =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sofaclean-pro-v2.vercel.app").replace(/\/+$/,"");
+  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sofaclean-pro-v2.vercel.app")
+    .replace(/\/+$/, "");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = (d: string) => new Date(d).toISOString();
@@ -24,4 +25,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [...staticUrls, ...posts];
 }
-
