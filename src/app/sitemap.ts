@@ -1,6 +1,6 @@
 // src/app/sitemap.ts
 // ปิดแคชเพื่อให้ sitemap ออกค่าใหม่ทุกครั้ง
-export const revalidate = 0;
+export const revalidate = 3600;
 
 import type { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
