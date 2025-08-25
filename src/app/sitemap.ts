@@ -36,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/th/blog/how-to-clean-fabric-sofa`, lastModified: now('2024-07-21'), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/en/blog/when-to-clean-car-seats`,  lastModified: now('2024-07-18'), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/th/blog/when-to-clean-car-seats`,  lastModified: now('2024-07-18'), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่5551`, lastModified: now('2025-08-13'), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่`, lastModified: now('2025-08-13'), changeFrequency: 'monthly', priority: 0.8 },
   ];
 
   return [...staticUrls, ...posts];
