@@ -1,19 +1,20 @@
 // src/app/sitemap.ts
-// ปิดแคชด้วยวิธีที่ Next รองรับกับ metadata route
+// ปิดแคชเพื่อให้ sitemap ออกค่าใหม่ทุกครั้ง
 export const revalidate = 0;
 
 import type { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
 
+// ดึง base URL จาก header ของ request โดยตรง
 function getBaseUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (envUrl && envUrl.trim()) return envUrl.replace(/\/+$/, '');
   try {
     const h = headers();
     const host = h.get('x-forwarded-host') || h.get('host');
     const proto = h.get('x-forwarded-proto') || 'https';
     if (host) return `${proto}://${host}`.replace(/\/+$/, '');
-  } catch {}
+  } catch {
+    // เผื่อถูกเรียกตอน build: fallback เป็นโดเมนบน Vercel
+  }
   return 'https://sofaclean-pro-v2.vercel.app';
 }
 
@@ -35,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/th/blog/how-to-clean-fabric-sofa`, lastModified: now('2024-07-21'), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/en/blog/when-to-clean-car-seats`,  lastModified: now('2024-07-18'), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/th/blog/when-to-clean-car-seats`,  lastModified: now('2024-07-18'), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่555`, lastModified: now('2025-08-13'), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/th/blog/บริการซักเบาะโซฟา-ทำความสะอาดถึงบ้าน-สะอาด-ปลอดภัย-เหมือนใหม่5551`, lastModified: now('2025-08-13'), changeFrequency: 'monthly', priority: 0.8 },
   ];
 
   return [...staticUrls, ...posts];
