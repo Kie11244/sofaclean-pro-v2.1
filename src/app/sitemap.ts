@@ -1,27 +1,19 @@
-// ใช้ไฟล์ sitemap แบบ dynamic เพื่อเลี่ยงแคชและใช้ host ปัจจุบัน
-export const revalidate = 0 as const;
-export const dynamic = 'force-dynamic';
+// src/app/sitemap.ts
+// ปิดแคชด้วยวิธีที่ Next รองรับกับ metadata route
+export const revalidate = 0;
 
 import type { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
 
-// เลือก base URL อย่างปลอดภัย:
-// 1) ใช้ NEXT_PUBLIC_SITE_URL ถ้าตั้งไว้
-// 2) ไม่งั้นดึงจาก header ของ request (x-forwarded-host/proto)
-// 3) fallback เป็นโดเมน Vercel ของโปรเจกต์
 function getBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (envUrl && envUrl.trim()) {
-    return envUrl.replace(/\/+$/, '');
-  }
+  if (envUrl && envUrl.trim()) return envUrl.replace(/\/+$/, '');
   try {
     const h = headers();
     const host = h.get('x-forwarded-host') || h.get('host');
     const proto = h.get('x-forwarded-proto') || 'https';
     if (host) return `${proto}://${host}`.replace(/\/+$/, '');
-  } catch {
-    // ignore – headers() อาจใช้ไม่ได้ตอน build บางโหมด
-  }
+  } catch {}
   return 'https://sofaclean-pro-v2.vercel.app';
 }
 
