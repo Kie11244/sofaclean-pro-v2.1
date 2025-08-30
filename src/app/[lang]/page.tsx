@@ -42,7 +42,9 @@ type Props = {
   params: { lang: 'en' | 'th' };
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://psychic-glider-453312-k0.firebaseapp.com';
+// ✅ ใช้โดเมนโปรดักชันเป็นค่า default
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://sofaclean-pro-v2.vercel.app';
+
 
 export async function generateMetadata({ params: { lang } }: Props): Promise<Metadata> {
     const dict = await getDictionary(lang);
