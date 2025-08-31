@@ -1,12 +1,22 @@
-// /app/[lang]/layout.tsx
+// app/[lang]/layout.tsx
 import type { Metadata } from 'next';
 import { BASE_URL } from '@/lib/site';
 
 type Props = { params: { lang: 'th' | 'en' } };
 
+// ✅ layout ของ segment [lang]
+export default function LangLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
+
+// ✅ metadata สำหรับทุกเพจใต้ [lang]
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = params.lang === 'en' ? 'en' : 'th';
-  const path = `/${lang}`; // index ของภาษานี้
+  const path = `/${lang}`; // canonical สำหรับ index ของภาษานี้
   const canonical = `${BASE_URL}${path}`;
 
   return {
@@ -22,13 +32,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: lang === 'th' ? 'th_TH' : 'en_US',
       siteName: 'SofaClean Pro',
     },
-    twitter: {
-      card: 'summary_large_image',
-    },
   };
-}
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // ไม่ครอบ <html> ที่นี่เพราะคุณน่าจะมีใน app/layout.tsx แล้ว
-  return children;
 }
