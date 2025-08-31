@@ -1,6 +1,8 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from 'next';
 
+console.log("POSTS SNAP:", postsSnap.docs.map(d => d.data()));
+
 export const revalidate = 3600; // พอเหมาะสำหรับ sitemap
 
 function getBaseUrl(): string {
