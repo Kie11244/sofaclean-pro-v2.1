@@ -1,75 +1,79 @@
 // src/app/sitemap.ts
-// ✅ Dynamic + ดึงทุกบทความจาก Firestore
-export const revalidate = 60;             // อัปเดตอย่างน้อยทุก 60 วิ
-export const dynamic = 'force-dynamic';   // กัน cache ดื้อ ๆ
-
 import type { MetadataRoute } from 'next';
 
-// ---- Base URL (ควรตั้ง ENV ให้ครบ Dev/Preview/Prod) ----
+export const revalidate = 3600; // พอเหมาะสำหรับ sitemap
+
 function getBaseUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '');
-  if (fromEnv) return fromEnv;
-  return 'https://sofaclean-pro-v2.vercel.app'; // fallback
+  const env = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
+  return env || 'https://sofaclean-pro-v2.vercel.app';
 }
 const base = getBaseUrl();
 
-// ---- Firestore ----
+// Firestore (web SDK ใช้ได้ใน route handler/server component)
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
-// ---- Types & utils ----
 type PostDoc = {
-  slug: string;
+  slug?: string;
   lang?: 'th' | 'en';
   status?: 'published' | 'draft';
-  date?: string | number;        // string ISO หรือ timestamp
-  updatedAt?: string | number;   // (ถ้ามี)
+  date?: string | number;
+  updatedAt?: string | number;
 };
 
-const safe = (s: string) => encodeURI(s);
 const asDate = (d?: string | number) => {
-  if (!d) return new Date();
-  const t = new Date(d);
+  const t = d ? new Date(d) : new Date();
   return isNaN(t.getTime()) ? new Date() : t;
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // ----- Static URLs -----
-  const staticUrls: MetadataRoute.Sitemap = [
-    { url: `${base}/`,        changeFrequency: 'daily',  priority: 1.0, lastModified: new Date() },
-    { url: `${base}/en`,      changeFrequency: 'daily',  priority: 1.0, lastModified: new Date() },
-    { url: `${base}/en/blog`, changeFrequency: 'weekly', priority: 0.9, lastModified: new Date() },
-    { url: `${base}/th`,      changeFrequency: 'daily',  priority: 1.0, lastModified: new Date() },
-    { url: `${base}/th/blog`, changeFrequency: 'weekly', priority: 0.9, lastModified: new Date() },
+  // static ขั้นต่ำเท่าที่มั่นใจว่ามีจริง
+  const urls: MetadataRoute.Sitemap = [
+    { url: `${base}/`, changeFrequency: 'daily', priority: 1, lastModified: new Date() },
   ];
 
-  // ----- Dynamic Posts: ดึง "ทุก" บทความที่ published -----
-  // หมายเหตุ: ไม่ใส่ orderBy → เลี่ยง requirement เรื่อง Composite Index
   try {
-    const postsSnap = await getDocs(
+    const snap = await getDocs(
       query(collection(db, 'posts'), where('status', '==', 'published'))
     );
 
-    const postEntries: MetadataRoute.Sitemap = postsSnap.docs.map((doc) => {
-      const data = doc.data() as PostDoc;
+    const langs = new Set<'th' | 'en'>();
+    const postEntries: MetadataRoute.Sitemap = [];
 
-      // default ภาษาเป็น th ถ้าไม่ระบุ
-      const lang = data.lang === 'en' ? 'en' : 'th';
+    for (const doc of snap.docs) {
+      const p = doc.data() as PostDoc;
+      if (!p?.slug) continue;                     // กัน slug ว่าง
+      const lang = p.lang === 'en' ? 'en' : 'th'; // default เป็น th
+      langs.add(lang);
 
-      // ใช้ updatedAt ถ้ามี ไม่งั้นใช้ date
-      const last = asDate(data.updatedAt ?? data.date ?? Date.now());
-
-      return {
-        url: `${base}/${lang}/blog/${safe(data.slug)}`,
-        lastModified: last,
+      postEntries.push({
+        url: `${base}/${lang}/blog/${encodeURIComponent(p.slug)}`,
+        lastModified: asDate(p.updatedAt ?? p.date),
         changeFrequency: 'monthly',
         priority: 0.8,
-      };
-    });
+      });
+    }
 
-    return [...staticUrls, ...postEntries];
+    // เพิ่ม index ของแต่ละภาษา “เฉพาะภาษาที่มีจริง”
+    for (const lang of langs) {
+      urls.push(
+        { url: `${base}/${lang}`,      changeFrequency: 'daily',  priority: 1,   lastModified: new Date() },
+        { url: `${base}/${lang}/blog`, changeFrequency: 'weekly', priority: 0.9, lastModified: new Date() },
+      );
+    }
+
+    // รวม, กรองซ้ำ, เรียง
+    const seen = new Set<string>();
+    const all = [...urls, ...postEntries].filter(item => {
+      if (!item.url) return false;
+      if (seen.has(item.url)) return false;
+      seen.add(item.url);
+      return true;
+    }).sort((a, b) => a.url.localeCompare(b.url));
+
+    return all;
   } catch {
-    // ถ้าดึง Firestore ล้มเหลว ยังมี static sitemap ใช้งานได้
-    return [...staticUrls];
+    // ถ้าอ่าน Firestore ไม่ได้ — ให้มีเฉพาะโฮมเพจ (เลี่ยงใส่ URL ที่อาจ 404)
+    return urls;
   }
 }
